@@ -31,6 +31,8 @@ void update(int* cells, size_t width, size_t height, snake_t* snake_p,
     // to the new position. If the snake eats food, the game score (`g_score`)
     // increases by 1. This function assumes that the board is surrounded by
     // walls, so it does not handle the case where a snake runs off the board.
+    
+    
 
     // TODO: implement!
 }

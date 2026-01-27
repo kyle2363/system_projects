@@ -92,6 +92,11 @@ enum board_init_status initialize_game(int** cells_p, size_t* width_p,
                                        size_t* height_p, snake_t* snake_p,
                                        char* board_rep) {
     // TODO: implement!
+    initialize_default_board(cells_p, width_p, height_p);
+
+    snake_col = 3; 
+    snake_row = 3;
+    snake_dir = INPUT_RIGHT;
 
     return INIT_SUCCESS;
 }
