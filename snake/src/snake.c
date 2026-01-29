@@ -132,8 +132,9 @@ int main(int argc, char** argv) {
     initialize_window(width, height);
     // TODO: implement the game loop here (part 1A)!
     while(true){
+        int key_pressed = get_input();
         usleep(100000*5);
-        update(cells, width, height, NULL, INPUT_NONE, 0);
+        update(cells, width, height, NULL, key_pressed, 0);
         render_game(cells, width, height);
     }
     // TODO: uncomment the line of code below (part 1A)

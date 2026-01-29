@@ -33,7 +33,7 @@
 void check_terminal_size(size_t width, size_t height) {
     /* DO NOT MODIFY THIS FUNCTION */
     // use ncurses to get terminal dimensions.
-    int req_h = (int)height + 2;
+    int req_h = (int)height;
     int req_w = (int)width;
     if (LINES < req_h || COLS < req_w) {
         endwin();

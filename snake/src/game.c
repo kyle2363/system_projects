@@ -33,36 +33,57 @@ void update(int* cells, size_t width, size_t height, snake_t* snake_p,
     // walls, so it does not handle the case where a snake runs off the board.
 
     // TODO: implement!
-    if(input == INPUT_NONE && g_game_over != 1){
-        int oldCellLocatition = snake_row * 20 + snake_col;
-        int newCellLocatition = snake_row * 20 + snake_col;
+    if(g_game_over != 1){
+        int oldCellLocation = snake_row * 20 + snake_col;
+        int newCellLocation = snake_row * 20 + snake_col;
 
         int row_change = 0;
         int col_change = 0;
-        //printf("\n %d \n", newCellLocatition);
+        if(input != INPUT_NONE){
+            snake_dir = input;
+        }
         switch(snake_dir){
             case INPUT_RIGHT:
-                newCellLocatition = newCellLocatition + 1;
+                newCellLocation = newCellLocation + 1;
                 col_change++;
             break;
+            case INPUT_LEFT:
+                newCellLocation = newCellLocation - 1;
+                col_change--;
+            break;
+            case INPUT_UP:
+                newCellLocation = newCellLocation - 20;
+                row_change--;
+            break;
+            case INPUT_DOWN:
+                newCellLocation = newCellLocation + 20;
+                row_change++;
+            break;
         }
-        //printf("\n %d \n", newCellLocatition);
-        int cell_content = cells[newCellLocatition];
+        int cell_content = cells[newCellLocation];
         if(cell_content == FLAG_WALL || FLAG_SNAKE == (cell_content & FLAG_SNAKE)){
             g_game_over = 1;
-        }else if(cell_content == FLAG_GRASS){
-            if(cells[oldCellLocatition] == FLAG_SNAKE){
-                cells[oldCellLocatition] = PLAIN_CELL;
+        }else if(cell_content == FLAG_GRASS ){
+            if(cells[oldCellLocation] == FLAG_SNAKE){
+                cells[oldCellLocation] = PLAIN_CELL;
+            }else if(cells[oldCellLocation] == (FLAG_GRASS | FLAG_SNAKE)){
+                cells[oldCellLocation] = FLAG_GRASS;
             }else{
-                cells[oldCellLocatition] = cell_content ^ FLAG_SNAKE;
+                cells[oldCellLocation] = cell_content ^ FLAG_SNAKE;
             }
-            cells[newCellLocatition] = FLAG_SNAKE | FLAG_GRASS;
+            cells[newCellLocation] = FLAG_SNAKE | FLAG_GRASS;
         }else{
-            cells[oldCellLocatition] = PLAIN_CELL;
-            cells[newCellLocatition] = FLAG_SNAKE;
+            cells[oldCellLocation] = cells[oldCellLocation] ^ FLAG_SNAKE;
+            cells[newCellLocation] = FLAG_SNAKE;
         }
         snake_row += row_change;
         snake_col += col_change;
+        
+        /*printf("Elements of the array: ");
+        for (int i = 0; i < 200; i++) {
+            printf("%d ", cells[i]); // %d is the format specifier for integers
+        }
+        printf("\n"); // Print a newline at the end*/
 
 
     }
