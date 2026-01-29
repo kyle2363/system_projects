@@ -131,6 +131,7 @@ int main(int argc, char** argv) {
     */
     initialize_window(width, height);
     // TODO: implement the game loop here (part 1A)!
+    
     while(true){
         int key_pressed = get_input();
         usleep(100000*5);

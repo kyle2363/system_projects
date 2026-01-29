@@ -97,7 +97,7 @@ enum board_init_status initialize_game(int** cells_p, size_t* width_p,
     snake_col = 2; 
     snake_row = 2;
     snake_dir = INPUT_RIGHT;
-
+    place_food(*cells_p, *width_p, *height_p);
     return INIT_SUCCESS;
 }
 
