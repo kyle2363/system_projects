@@ -34,8 +34,8 @@ void update(int* cells, size_t width, size_t height, snake_t* snake_p,
 
     // TODO: implement!
     if(g_game_over != 1){
-        int oldCellLocation = snake_row * 20 + snake_col;
-        int newCellLocation = snake_row * 20 + snake_col;
+        int oldCellLocation = snake_row * width + snake_col;
+        int newCellLocation = snake_row * width + snake_col;
 
         int row_change = 0;
         int col_change = 0;
@@ -52,11 +52,11 @@ void update(int* cells, size_t width, size_t height, snake_t* snake_p,
                 col_change--;
             break;
             case INPUT_UP:
-                newCellLocation = newCellLocation - 20;
+                newCellLocation = newCellLocation - width;
                 row_change--;
             break;
             case INPUT_DOWN:
-                newCellLocation = newCellLocation + 20;
+                newCellLocation = newCellLocation + width;
                 row_change++;
             break;
         }
@@ -64,17 +64,19 @@ void update(int* cells, size_t width, size_t height, snake_t* snake_p,
         if(cell_content == FLAG_WALL || FLAG_SNAKE == (cell_content & FLAG_SNAKE)){
             g_game_over = 1;
         }else{
+            if((cell_content & FLAG_FOOD) == FLAG_FOOD){
+                g_score++;
+                place_food(cells, width, height);
+                cells[newCellLocation] = cells[newCellLocation] ^ FLAG_FOOD;
+            }
+            
             cells[oldCellLocation] = cells[oldCellLocation] ^ FLAG_SNAKE;
             cells[newCellLocation] = FLAG_SNAKE | cells[newCellLocation];
         }
         snake_row += row_change;
         snake_col += col_change;
         
-        if((cells[newCellLocation] & FLAG_FOOD) == FLAG_FOOD){
-            g_score++;
-            cells[newCellLocation] = cells[newCellLocation] ^ FLAG_FOOD;
-            place_food(cells, width, height);
-        }
+        
 
 
     }
