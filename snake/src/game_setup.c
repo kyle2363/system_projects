@@ -103,7 +103,9 @@ enum board_init_status initialize_game(int** cells_p, size_t* width_p,
         initialize_default_board(cells_p, width_p, height_p);
     }
     snake_dir = INPUT_RIGHT;
-    place_food(*cells_p, *width_p, *height_p);
+    if(status == INIT_SUCCESS){
+        place_food(*cells_p, *width_p, *height_p);
+    }
     return status;
 }
 
@@ -197,6 +199,7 @@ enum board_init_status set_board_cells(int** cells_p, char* string, int size, in
 
 int check_board_error(int** cells_p, int size) {
     if (cells_p == NULL || *cells_p == NULL) {
+        free(*cells_p);
         return INIT_ERR_INCORRECT_DIMENSIONS;
     }
 
@@ -209,6 +212,7 @@ int check_board_error(int** cells_p, int size) {
     }
 
     if (count_of_snake != 1) {
+        free(*cells_p);
         return INIT_ERR_WRONG_SNAKE_NUM;
     }
 
@@ -261,6 +265,8 @@ enum board_init_status decompress_board_str(int** cells_p, size_t* width_p,
     char* original_str;
     token = strtok_r(compressed_copy, delim, &original_str);
     if(set_board_size(width_p, height_p, token) == INIT_ERR_BAD_CHAR){
+        free(compressed_copy);
+        free(*cells_p);
         return INIT_ERR_BAD_CHAR;
     }
     *cells_p = malloc((*width_p) * (*height_p) * sizeof(int));
@@ -273,14 +279,20 @@ enum board_init_status decompress_board_str(int** cells_p, size_t* width_p,
     while(token != NULL){
         enum board_init_status stat = set_board_cells(cells_p, token, total_cells, &pos);
         if(stat == INIT_ERR_BAD_CHAR){
+            free(compressed_copy);
+            free(*cells_p);
             return  INIT_ERR_BAD_CHAR;
         }
         if(stat == INIT_ERR_INCORRECT_DIMENSIONS){
+            free(compressed_copy);
+            free(*cells_p);
             return INIT_ERR_INCORRECT_DIMENSIONS;
         }
         token = strtok_r(NULL, delim, &original_str); //Next Token
     }
+    free(compressed_copy);
     if(pos != total_cells){
+        free(*cells_p);
         return INIT_ERR_INCORRECT_DIMENSIONS;
     }
     
@@ -292,7 +304,6 @@ enum board_init_status decompress_board_str(int** cells_p, size_t* width_p,
             snake_col = i % (*width_p);
         }
     }
-    free(compressed_copy);
 
     return check_board_error(cells_p, total_cells);
 }
