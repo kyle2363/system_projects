@@ -34,15 +34,15 @@ void update(int* cells, size_t width, size_t height, snake_t* snake_p,
 
     // TODO: implement!
     if(g_game_over != 1){
-        int oldCellLocation = snake_row * width + snake_col;
-        int newCellLocation = snake_row * width + snake_col;
+        int oldCellLocation = snake_p->snake_row * width + snake_p->snake_col;
+        int newCellLocation = snake_p->snake_row * width + snake_p->snake_col;
 
         int row_change = 0;
         int col_change = 0;
         if(input != INPUT_NONE){
-            snake_dir = input;
+            snake_p->snake_dir = input;
         }
-        switch(snake_dir){
+        switch(snake_p->snake_dir){
             case INPUT_RIGHT:
                 newCellLocation = newCellLocation + 1;
                 col_change++;
@@ -73,8 +73,8 @@ void update(int* cells, size_t width, size_t height, snake_t* snake_p,
             cells[oldCellLocation] = cells[oldCellLocation] ^ FLAG_SNAKE;
             cells[newCellLocation] = FLAG_SNAKE | cells[newCellLocation];
         }
-        snake_row += row_change;
-        snake_col += col_change;
+        snake_p->snake_row += row_change;
+        snake_p->snake_col += col_change;
         
         
 

@@ -49,6 +49,9 @@ extern int snake_dir; // current snake heading storing INPUT_(direction)
 typedef struct snake {
     // TODO: Define your snake struct! (part 3A)
     // Store any necessary information about your snake here.
+    int snake_col; 
+    int snake_row;
+    int snake_dir;
 } snake_t;
 
 void set_seed(unsigned seed);

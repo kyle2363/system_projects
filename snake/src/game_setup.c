@@ -98,11 +98,11 @@ enum board_init_status initialize_game(int** cells_p, size_t* width_p,
     if(board_rep != NULL){
         status = decompress_board_str(cells_p, width_p, height_p, snake_p, board_rep);
     }else{
-        snake_col = 2; 
-        snake_row = 2;
+        snake_p->snake_col = 2; 
+        snake_p->snake_row = 2;
         initialize_default_board(cells_p, width_p, height_p);
     }
-    snake_dir = INPUT_RIGHT;
+    snake_p->snake_dir = INPUT_RIGHT;
     if(status == INIT_SUCCESS){
         place_food(*cells_p, *width_p, *height_p);
     }
@@ -300,8 +300,8 @@ enum board_init_status decompress_board_str(int** cells_p, size_t* width_p,
     //printf(" %ld   %ld \n", *width_p, *height_p);
     for (int i = 0; i < total_cells; i++) {
         if ((*cells_p)[i] == FLAG_SNAKE) {
-            snake_row = i / (*width_p);
-            snake_col = i % (*width_p);
+            snake_p->snake_row = i / (*width_p);
+            snake_p->snake_col = i % (*width_p);
         }
     }
 

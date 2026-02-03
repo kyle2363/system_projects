@@ -8,9 +8,7 @@
 int g_game_over;
 int g_score;
 
-int snake_col; 
-int snake_row;
-int snake_dir;
+
 
 /** Sets the seed for random number generation.
  * Arguments:
