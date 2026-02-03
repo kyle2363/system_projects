@@ -280,6 +280,9 @@ enum board_init_status decompress_board_str(int** cells_p, size_t* width_p,
         }
         token = strtok_r(NULL, delim, &original_str); //Next Token
     }
+    if(pos != total_cells){
+        return INIT_ERR_INCORRECT_DIMENSIONS;
+    }
     
     //print_board(*cells_p, *width_p, *height_p);
     //printf(" %ld   %ld \n", *width_p, *height_p);
