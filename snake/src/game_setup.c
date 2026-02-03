@@ -93,19 +93,17 @@ enum board_init_status initialize_game(int** cells_p, size_t* width_p,
                                        size_t* height_p, snake_t* snake_p,
                                        char* board_rep) {
     // TODO: implement!
-    //board_rep = "B7x10|W10|W1E4W5|W2E5G2W1|W1E8W1|W1E4W1E3W1|W1E2S1E1W1E3W1|W10";
-    board_rep = "B80x24|W80|W1E78W1|W1E78W1|W1E78W1|W1E78W1|W1E78W1|W1E78W1|W1E78W1|W1E78W1|W1E78W1|W1E78W1|W1E9S1E68W1|W1E78W1|W1E78W1|W1E78W1|W1E78W1|W1E78W1|W1E78W1|W1E78W1|W1E78W1|W1E78W1|W1E78W1|W80";
+    //./snake 0 "B7x10|W10|W1E4W5|W2E5G2W1|W1E8W1|W1E4W1E3W1|W1E2S1E1W1E3W1|W10"
+    enum board_init_status status = INIT_SUCCESS;
     if(board_rep != NULL){
-        decompress_board_str(cells_p, width_p, height_p, snake_p, board_rep);
+        status = decompress_board_str(cells_p, width_p, height_p, snake_p, board_rep);
     }else{
         snake_col = 2; 
         snake_row = 2;
         initialize_default_board(cells_p, width_p, height_p);
     }
     snake_dir = INPUT_RIGHT;
-    snake_dir = INPUT_UP;
-    place_food(*cells_p, *width_p, *height_p);
-    return INIT_SUCCESS;
+    return status;
 }
 
 
@@ -135,28 +133,29 @@ void set_cell(int** cells_p, int pos, int count, char type){
 Sets the size parameters of the board with the given String
 */
 
-int set_board_size(size_t* width_p, size_t* height_p, char* string){
+enum board_init_status set_board_size(size_t* width_p, size_t* height_p, char* string){
 
     int width;
     int height;
-    int number_of_items = sscanf(string, "B%dx%d", &width, &height);
+    int number_of_items = sscanf(string, "B%dx%d", &height, &width);
     if(number_of_items == 2){
     *height_p = height;
     *width_p = width;
     }else{
-        return 1;
+        return INIT_ERR_BAD_CHAR;
     }
-    return 0;
+    return INIT_SUCCESS;
 }
 
 /*
 Sets the size parameters of the board with the given String
+./snake 0 "B7x10|W10|W1E4W5|W2E5G2W1|W1E8W1|W1E4W1E3W1|W1E1S1E2W1E3W1|W10"
 */
 
 enum board_init_status set_board_cells(int** cells_p, char* string, int size, int* pos){
     int len = strlen(string); 
     int i=0;
-    while(i < len && *pos < size){
+    while(i < len){
         char cell_type;
         switch(string[i]){
             case 'E':
@@ -185,7 +184,11 @@ enum board_init_status set_board_cells(int** cells_p, char* string, int size, in
             i++;
         }
         int count = strtol(number, NULL, 10);
-        set_cell(cells_p, *pos, count, cell_type);
+        if((*pos + count) <= size){
+            set_cell(cells_p, *pos, count, cell_type);
+        }else{
+            return INIT_ERR_INCORRECT_DIMENSIONS;
+        }
         *pos += count;
     }
     return INIT_SUCCESS;
@@ -249,14 +252,14 @@ enum board_init_status decompress_board_str(int** cells_p, size_t* width_p,
                                             size_t* height_p, snake_t* snake_p,
                                             char* compressed) {
     // TODO: implement!
-    // sample string B7x10|W10|W1E4W5|W2E5G2W1|W1E8W1|W1E4W1E3W1|W1E2S1E1W1E3W1|W10
+    // sample string 7x10|W10|W1E4W5|W2E5G2W1|W1E8W1|W1E4W1E3W1|W1E2S1E1W1E3W1|W10
     
     char* compressed_copy = strdup(compressed); 
     char* token;
     const char* delim = "|";
     char* original_str;
     token = strtok_r(compressed_copy, delim, &original_str);
-    if(set_board_size(width_p, height_p, token) == 1){
+    if(set_board_size(width_p, height_p, token) == INIT_ERR_BAD_CHAR){
         return INIT_ERR_BAD_CHAR;
     }
     *cells_p = malloc((*width_p) * (*height_p) * sizeof(int));
@@ -267,14 +270,18 @@ enum board_init_status decompress_board_str(int** cells_p, size_t* width_p,
     token = strtok_r(NULL, delim, &original_str);
     int pos = 0;
     while(token != NULL){
-        if(set_board_cells(cells_p, token, total_cells, &pos) == INIT_ERR_BAD_CHAR ){
+        enum board_init_status stat = set_board_cells(cells_p, token, total_cells, &pos);
+        if(stat == INIT_ERR_BAD_CHAR){
             return  INIT_ERR_BAD_CHAR;
+        }
+        if(stat == INIT_ERR_INCORRECT_DIMENSIONS){
+            return INIT_ERR_INCORRECT_DIMENSIONS;
         }
         token = strtok_r(NULL, delim, &original_str); //Next Token
     }
     
-    print_board(*cells_p, *width_p, *height_p);
-    printf(" %ld   %ld \n", *width_p, *height_p);
+    //print_board(*cells_p, *width_p, *height_p);
+    //printf(" %ld   %ld \n", *width_p, *height_p);
     for (int i = 0; i < total_cells; i++) {
         if ((*cells_p)[i] == FLAG_SNAKE) {
             snake_row = i / (*width_p);

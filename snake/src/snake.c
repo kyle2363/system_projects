@@ -110,7 +110,8 @@ int main(int argc, char** argv) {
 
     // Check validity of the board before rendering!
     // TODO: Implement (in Part 2)
-    // if ( ? board is not valid ? ) { return EXIT_FAILURE; }
+    printf("%d\n", status);
+     if (status != INIT_SUCCESS ) { return EXIT_FAILURE; }
 
     // Read in the player's name & save its name and length in global variables
     // TODO: Implement (in Part 3B)
@@ -130,6 +131,7 @@ int main(int argc, char** argv) {
         "-=:___________/\n");
     */
     initialize_window(width, height);
+    place_food(cells, width, height);
     // TODO: implement the game loop here (part 1A)!
     
     while(true){
