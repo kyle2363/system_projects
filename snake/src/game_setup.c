@@ -103,6 +103,7 @@ enum board_init_status initialize_game(int** cells_p, size_t* width_p,
         initialize_default_board(cells_p, width_p, height_p);
     }
     snake_dir = INPUT_RIGHT;
+    place_food(*cells_p, *width_p, *height_p);
     return status;
 }
 

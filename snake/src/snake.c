@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
         "-=:___________/\n");
     */
     initialize_window(width, height);
-    place_food(cells, width, height);
+    
     // TODO: implement the game loop here (part 1A)!
     
     while(true){
