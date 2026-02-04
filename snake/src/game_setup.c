@@ -98,10 +98,12 @@ enum board_init_status initialize_game(int** cells_p, size_t* width_p,
     if(board_rep != NULL){
         status = decompress_board_str(cells_p, width_p, height_p, snake_p, board_rep);
     }else{
-        int* NUMBER_TWO = malloc(sizeof(int));
-        *NUMBER_TWO = 2;
-        ll_insert_first(&(snake_p->snake_col), NUMBER_TWO); 
-        ll_insert_first(&(snake_p->snake_row), NUMBER_TWO);
+        int* NUMBER_TWO_R = malloc(sizeof(int));
+        int* NUMBER_TWO_C = malloc(sizeof(int));
+        *NUMBER_TWO_R = 2;
+        *NUMBER_TWO_C = 2;
+        ll_insert_first(&(snake_p->snake_col), NUMBER_TWO_R); 
+        ll_insert_first(&(snake_p->snake_row), NUMBER_TWO_C);
         initialize_default_board(cells_p, width_p, height_p);
     }
     snake_p->snake_dir = INPUT_RIGHT;
@@ -201,7 +203,7 @@ enum board_init_status set_board_cells(int** cells_p, char* string, int size, in
 
 int check_board_error(int** cells_p, int size) {
     if (cells_p == NULL || *cells_p == NULL) {
-        free(*cells_p);
+        //free(*cells_p);
         return INIT_ERR_INCORRECT_DIMENSIONS;
     }
 
@@ -214,7 +216,7 @@ int check_board_error(int** cells_p, int size) {
     }
 
     if (count_of_snake != 1) {
-        free(*cells_p);
+        //free(*cells_p);
         return INIT_ERR_WRONG_SNAKE_NUM;
     }
 
@@ -268,7 +270,6 @@ enum board_init_status decompress_board_str(int** cells_p, size_t* width_p,
     token = strtok_r(compressed_copy, delim, &original_str);
     if(set_board_size(width_p, height_p, token) == INIT_ERR_BAD_CHAR){
         free(compressed_copy);
-        free(*cells_p);
         return INIT_ERR_BAD_CHAR;
     }
     *cells_p = malloc((*width_p) * (*height_p) * sizeof(int));
@@ -312,7 +313,16 @@ enum board_init_status decompress_board_str(int** cells_p, size_t* width_p,
     ll_insert_first(&(snake_p->snake_row), newRow);
     ll_insert_first(&(snake_p->snake_col), newCol);
 
-    return check_board_error(cells_p, total_cells);
+    enum board_init_status error_check = check_board_error(cells_p, total_cells);
+    if (error_check != INIT_SUCCESS) {
+        free(*cells_p);  // Free the cells
+        // Also need to free the snake data we just allocated
+        int* r = ll_remove_first(&(snake_p->snake_row));
+        int* c = ll_remove_first(&(snake_p->snake_col));
+        free(r);
+        free(c);
+    }
+    return error_check;
 }
 
 
