@@ -283,12 +283,10 @@ enum board_init_status decompress_board_str(int** cells_p, size_t* width_p,
         enum board_init_status stat = set_board_cells(cells_p, token, total_cells, &pos);
         if(stat == INIT_ERR_BAD_CHAR){
             free(compressed_copy);
-            free(*cells_p);
             return  INIT_ERR_BAD_CHAR;
         }
         if(stat == INIT_ERR_INCORRECT_DIMENSIONS){
             free(compressed_copy);
-            free(*cells_p);
             return INIT_ERR_INCORRECT_DIMENSIONS;
         }
         token = strtok_r(NULL, delim, &original_str); //Next Token

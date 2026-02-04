@@ -110,7 +110,7 @@ int main(int argc, char** argv) {
     // Check validity of the board before rendering!
     // TODO: Implement (in Part 2)
     printf("%d\n", status);
-     if (status != INIT_SUCCESS ) { return EXIT_FAILURE; }
+     if (status != INIT_SUCCESS ) { free(cells) ;return EXIT_FAILURE; }
 
     // Read in the player's name & save its name and length in global variables
     // TODO: Implement (in Part 3B)
