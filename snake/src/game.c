@@ -79,12 +79,13 @@ void update(int* cells, size_t width, size_t height, snake_t* snake_p,
         int* newCol = malloc(sizeof(int));
         *newRow = (*(int*)ll_get_first(snake_p->snake_row) + row_change);
         *newCol = (*(int*)ll_get_first(snake_p->snake_col) + col_change);
-        ll_remove_last(&(snake_p->snake_row));
+        /*int* oldRow = */ll_remove_last(&(snake_p->snake_row));
         ll_insert_first(&(snake_p->snake_row), newRow);
-        ll_remove_last(&(snake_p->snake_col));
+        /*int* oldCol = */ll_remove_last(&(snake_p->snake_col));
         ll_insert_first(&(snake_p->snake_col), newCol);
-        
-        
+        //free(oldRow);
+        //free(oldCol);
+            
 
 
     }
@@ -136,6 +137,16 @@ void read_name(char* write_into) {
  */
 void teardown(int* cells, snake_t* snake_p) {  
     // TODO: Free the board
-
+    free(cells);
     // TODO: implement! (part 3A)
+
+    while((snake_p->snake_row)!= NULL){
+        int* row = (int*)ll_remove_first(&(snake_p->snake_row));
+        free(row);
+    }
+
+    while((snake_p->snake_col)!= NULL){
+        int* col = (int*)ll_remove_first(&(snake_p->snake_col));
+        free(col);
+    }
 }
