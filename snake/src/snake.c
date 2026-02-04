@@ -141,5 +141,6 @@ int main(int argc, char** argv) {
         render_game(cells, width, height);
     }
     // TODO: uncomment the line of code below (part 1A)
+    
     end_game(cells, width, height, &snake);
 }

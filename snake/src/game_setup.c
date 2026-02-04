@@ -98,8 +98,10 @@ enum board_init_status initialize_game(int** cells_p, size_t* width_p,
     if(board_rep != NULL){
         status = decompress_board_str(cells_p, width_p, height_p, snake_p, board_rep);
     }else{
-        snake_p->snake_col = 2; 
-        snake_p->snake_row = 2;
+        int* NUMBER_TWO = malloc(sizeof(int));
+        *NUMBER_TWO = 2;
+        ll_insert_first(&(snake_p->snake_col), NUMBER_TWO); 
+        ll_insert_first(&(snake_p->snake_row), NUMBER_TWO);
         initialize_default_board(cells_p, width_p, height_p);
     }
     snake_p->snake_dir = INPUT_RIGHT;
@@ -298,12 +300,17 @@ enum board_init_status decompress_board_str(int** cells_p, size_t* width_p,
     
     //print_board(*cells_p, *width_p, *height_p);
     //printf(" %ld   %ld \n", *width_p, *height_p);
+    int* newRow = malloc(sizeof(int));;
+    int* newCol = malloc(sizeof(int));
+
     for (int i = 0; i < total_cells; i++) {
         if ((*cells_p)[i] == FLAG_SNAKE) {
-            snake_p->snake_row = i / (*width_p);
-            snake_p->snake_col = i % (*width_p);
+            *newRow = i / (*width_p);
+            *newCol = i % (*width_p);
         }
     }
+    ll_insert_first(&(snake_p->snake_row), newRow);
+    ll_insert_first(&(snake_p->snake_col), newCol);
 
     return check_board_error(cells_p, total_cells);
 }

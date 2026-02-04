@@ -34,8 +34,8 @@ void update(int* cells, size_t width, size_t height, snake_t* snake_p,
 
     // TODO: implement!
     if(g_game_over != 1){
-        int oldCellLocation = snake_p->snake_row * width + snake_p->snake_col;
-        int newCellLocation = snake_p->snake_row * width + snake_p->snake_col;
+        int oldCellLocation =  *(int*)ll_get_first(snake_p->snake_row) * width + *(int*)ll_get_first(snake_p->snake_col);
+        int newCellLocation = *(int*)ll_get_first(snake_p->snake_row) * width + *(int*)ll_get_first(snake_p->snake_col);
 
         int row_change = 0;
         int col_change = 0;
@@ -73,8 +73,16 @@ void update(int* cells, size_t width, size_t height, snake_t* snake_p,
             cells[oldCellLocation] = cells[oldCellLocation] ^ FLAG_SNAKE;
             cells[newCellLocation] = FLAG_SNAKE | cells[newCellLocation];
         }
-        snake_p->snake_row += row_change;
-        snake_p->snake_col += col_change;
+        //snake_p->snake_row += row_change;
+        //snake_p->snake_col += col_change;
+        int* newRow = malloc(sizeof(int));
+        int* newCol = malloc(sizeof(int));
+        *newRow = (*(int*)ll_get_first(snake_p->snake_row) + row_change);
+        *newCol = (*(int*)ll_get_first(snake_p->snake_col) + col_change);
+        ll_remove_last(&(snake_p->snake_row));
+        ll_insert_first(&(snake_p->snake_row), newRow);
+        ll_remove_last(&(snake_p->snake_col));
+        ll_insert_first(&(snake_p->snake_col), newCol);
         
         
 
