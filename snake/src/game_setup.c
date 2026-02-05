@@ -314,6 +314,7 @@ enum board_init_status decompress_board_str(int** cells_p, size_t* width_p,
     enum board_init_status error_check = check_board_error(cells_p, total_cells);
     if (error_check != INIT_SUCCESS) {
         free(*cells_p);  // Free the cells
+        cells_p = NULL;
         // Also need to free the snake data we just allocated
         int* r = ll_remove_first(&(snake_p->snake_row));
         int* c = ll_remove_first(&(snake_p->snake_col));
