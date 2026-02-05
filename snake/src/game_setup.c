@@ -293,7 +293,7 @@ enum board_init_status decompress_board_str(int** cells_p, size_t* width_p,
     }
     free(compressed_copy);
     if(pos != total_cells){
-        free(*cells_p);
+        //free(*cells_p);
         return INIT_ERR_INCORRECT_DIMENSIONS;
     }
     
@@ -320,6 +320,7 @@ enum board_init_status decompress_board_str(int** cells_p, size_t* width_p,
         int* c = ll_remove_first(&(snake_p->snake_col));
         free(r);
         free(c);
+        return error_check;
     }
     return error_check;
 }
