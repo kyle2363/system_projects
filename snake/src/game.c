@@ -36,12 +36,21 @@ void update(int* cells, size_t width, size_t height, snake_t* snake_p,
     if(g_game_over != 1){
         int oldCellLocation =  *(int*)ll_get_last(snake_p->snake_row) * width + *(int*)ll_get_last(snake_p->snake_col);
         int newCellLocation = *(int*)ll_get_first(snake_p->snake_row) * width + *(int*)ll_get_first(snake_p->snake_col);
-
         int row_change = 0;
         int col_change = 0;
         bool isGrowing = false;
-        if(input != INPUT_NONE){
-            snake_p->snake_dir = input;
+        enum input_key oldDir = snake_p->snake_dir;
+
+        if (input != INPUT_NONE) {
+            bool reversing =
+                (oldDir == INPUT_UP    && input == INPUT_DOWN) ||
+                (oldDir == INPUT_DOWN  && input == INPUT_UP) ||
+                (oldDir == INPUT_LEFT  && input == INPUT_RIGHT) ||
+                (oldDir == INPUT_RIGHT && input == INPUT_LEFT);
+
+            if (!reversing) {
+                snake_p->snake_dir = input;
+            }
         }
         switch(snake_p->snake_dir){
             case INPUT_RIGHT:
@@ -62,7 +71,11 @@ void update(int* cells, size_t width, size_t height, snake_t* snake_p,
             break;
         }
         int cell_content = cells[newCellLocation];
-        if(cell_content == FLAG_WALL || (cell_content & FLAG_SNAKE) == FLAG_SNAKE){
+        bool hitsSnake = (cell_content & FLAG_SNAKE) == FLAG_SNAKE;
+        bool hitsTail = (newCellLocation == oldCellLocation);
+
+        if (cell_content == FLAG_WALL ||
+            (hitsSnake && !(hitsTail && !isGrowing))) {
             g_game_over = 1;
         }else{
             if((cell_content & FLAG_FOOD) == FLAG_FOOD){
