@@ -48,7 +48,7 @@ void update(int* cells, size_t width, size_t height, snake_t* snake_p,
                 (oldDir == INPUT_LEFT  && input == INPUT_RIGHT) ||
                 (oldDir == INPUT_RIGHT && input == INPUT_LEFT);
 
-            if (!reversing) {
+            if (!reversing || ll_length(snake_p->snake_col) == 1) {
                 snake_p->snake_dir = input;
             }
         }
@@ -82,12 +82,13 @@ void update(int* cells, size_t width, size_t height, snake_t* snake_p,
                 g_score++;
                 place_food(cells, width, height);
                 cells[newCellLocation] = cells[newCellLocation] ^ FLAG_FOOD;
-                isGrowing = true;
-            }else{
+                if(growing == 1 ){
+                    isGrowing = true;
+                }
+            }
+            if(!isGrowing){
                 cells[oldCellLocation] = cells[oldCellLocation] ^ FLAG_SNAKE;
             }
-            
-            
             cells[newCellLocation] = FLAG_SNAKE | cells[newCellLocation];
         }
         int* newRow = malloc(sizeof(int));
