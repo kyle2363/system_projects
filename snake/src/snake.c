@@ -33,8 +33,11 @@ enum input_key get_input() {
             // other keys in if we want other commands, like 'pause' or 'quit')
             return INPUT_NONE;
         }
+    }else if(botLevel == 1){
+        int r = rand() % 4;
+        return r;
     }else{
-
+        return INPUT_NONE;
     }
     /* DO NOT MODIFY THIS FUNCTION */
 }
@@ -140,6 +143,10 @@ int main(int argc, char** argv) {
     
     while(g_game_over == 0){
         int key_pressed = get_input();
+        //EXTRA CREDIT
+        if(botLevel == 2){
+            key_pressed = greedy_bfs(cells, width, height, &snake);
+        }
         usleep(100000*5);
         update(cells, width, height, &snake, key_pressed, snake_grows);
         render_game(cells, width, height);

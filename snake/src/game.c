@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <stddef.h>
 #include <assert.h>
+#include <math.h>
 
 #include "linked_list.h"
 #include "mbstrings.h"
@@ -188,4 +189,99 @@ void teardown(int* cells, snake_t* snake_p) {
         int* col = (int*)ll_remove_first(&(snake_p->snake_col));
         free(col);
     }
+}
+
+
+//EXTRA CREDIT FUNCTIONS
+
+double euclidean_distance(int x1, int y1, int x2, int y2){
+    return sqrt((x2-x1) * (x2-x1) + (y2-y1) * (y2-y1));
+}
+
+double find_distance(int* cells, int width, int cur_row, int cur_col, int col_change, int row_change, 
+    int food_row, int food_col){
+    int new_row = cur_row + row_change;
+    int new_col = cur_col + col_change;
+    if((cells[new_row * width + new_col] & FLAG_WALL) == FLAG_WALL 
+    || (cells[new_row * width + new_col] & FLAG_SNAKE) == FLAG_SNAKE){
+        return INFINITY;
+    }
+    return euclidean_distance(new_col, new_row, food_col, food_row);
+}
+
+int compare_doubles_asc(const void *a, const void *b) {
+    double doubleA = *(const double *)a;
+    double doubleB = *(const double *)b;
+
+    if (doubleA < doubleB) return -1;
+    if (doubleA > doubleB) return 1;
+    return 0;
+}
+//Greedy Best-First Search using Euclidean heuristic
+enum input_key greedy_bfs(int* cells, size_t width, size_t height, snake_t* snake_p){
+    int cur_row = *(int*)ll_get_first(snake_p->snake_row);
+    int cur_col = *(int*)ll_get_first(snake_p->snake_col);
+    int board_size = width * height;
+    int food_row = -1;
+    int food_col = -1;
+    for(int i=0; i< board_size; i++){
+        if((cells[i] & FLAG_FOOD) == FLAG_FOOD){
+            food_row = i / width;
+            food_col = i % width;
+        }
+    }
+    if(food_col == -1 || food_row == -1){
+        printf("ERROR NO FOOD FOUND");
+        return INPUT_NONE;
+    }
+    enum input_key oldDir = snake_p->snake_dir;
+    double distance_list[4];
+
+    distance_list[0] = find_distance(cells, width, cur_row, cur_col, -1, 0, food_row, food_col); //left
+    distance_list[1] = find_distance(cells, width, cur_row, cur_col,  1, 0, food_row, food_col); //right
+    distance_list[2] = find_distance(cells, width, cur_row, cur_col, 0, -1, food_row, food_col); //up
+    distance_list[3] = find_distance(cells, width, cur_row, cur_col, 0, 1, food_row, food_col); //down
+
+
+
+
+    int i = 0;
+    double current_min = INFINITY;
+    enum input_key current_min_direction;
+    while(i<4){
+        double distance = distance_list[i];
+        enum input_key old_min_direction = current_min_direction;
+        if(distance < current_min){
+            switch(i){
+                case 0:
+                current_min_direction = INPUT_LEFT;
+                break;
+                case 1:
+                current_min_direction = INPUT_RIGHT;
+                break;
+                case 2:
+                current_min_direction = INPUT_UP;
+                break;
+                case 3:
+                current_min_direction = INPUT_DOWN;
+                break;
+            }
+            bool reversing =
+                (oldDir == INPUT_UP    && current_min_direction == INPUT_DOWN) ||
+                (oldDir == INPUT_DOWN  && current_min_direction == INPUT_UP) ||
+                (oldDir == INPUT_LEFT  && current_min_direction == INPUT_RIGHT) ||
+                (oldDir == INPUT_RIGHT && current_min_direction == INPUT_LEFT);
+            if(!reversing){
+                current_min = distance;
+            }else{
+                current_min_direction = old_min_direction;
+            }
+        }
+        i++;        
+    }
+    if(current_min == INFINITY){
+        return INPUT_NONE;
+    }
+    
+    return current_min_direction;
 }

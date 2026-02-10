@@ -52,7 +52,7 @@ extern int grow_remaining;
 
 extern int growPerFood;
 
-#define growPerFood 1
+#define growPerFood 1 //1 is standard
 
 #define botLevel 0 //0 is off, 1 is to random directions, and 2 is path finding
 
