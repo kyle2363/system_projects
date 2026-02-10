@@ -34,11 +34,12 @@ void update(int* cells, size_t width, size_t height, snake_t* snake_p,
 
     // TODO: implement!
     if(g_game_over != 1){
-        int oldCellLocation =  *(int*)ll_get_first(snake_p->snake_row) * width + *(int*)ll_get_first(snake_p->snake_col);
+        int oldCellLocation =  *(int*)ll_get_last(snake_p->snake_row) * width + *(int*)ll_get_last(snake_p->snake_col);
         int newCellLocation = *(int*)ll_get_first(snake_p->snake_row) * width + *(int*)ll_get_first(snake_p->snake_col);
 
         int row_change = 0;
         int col_change = 0;
+        bool isGrowing = false;
         if(input != INPUT_NONE){
             snake_p->snake_dir = input;
         }
@@ -61,32 +62,33 @@ void update(int* cells, size_t width, size_t height, snake_t* snake_p,
             break;
         }
         int cell_content = cells[newCellLocation];
-        if(cell_content == FLAG_WALL || FLAG_SNAKE == (cell_content & FLAG_SNAKE)){
+        if(cell_content == FLAG_WALL || (cell_content & FLAG_SNAKE) == FLAG_SNAKE){
             g_game_over = 1;
         }else{
             if((cell_content & FLAG_FOOD) == FLAG_FOOD){
                 g_score++;
                 place_food(cells, width, height);
                 cells[newCellLocation] = cells[newCellLocation] ^ FLAG_FOOD;
+                isGrowing = true;
+            }else{
+                cells[oldCellLocation] = cells[oldCellLocation] ^ FLAG_SNAKE;
             }
             
-            cells[oldCellLocation] = cells[oldCellLocation] ^ FLAG_SNAKE;
+            
             cells[newCellLocation] = FLAG_SNAKE | cells[newCellLocation];
         }
-        //snake_p->snake_row += row_change;
-        //snake_p->snake_col += col_change;
         int* newRow = malloc(sizeof(int));
         int* newCol = malloc(sizeof(int));
         *newRow = (*(int*)ll_get_first(snake_p->snake_row) + row_change);
         *newCol = (*(int*)ll_get_first(snake_p->snake_col) + col_change);
         ll_insert_first(&(snake_p->snake_row), newRow);
         ll_insert_first(&(snake_p->snake_col), newCol);
-        int* oldRow = ll_remove_last(&(snake_p->snake_row));
-        int* oldCol = ll_remove_last(&(snake_p->snake_col));
-        
-        free(oldRow);
-        free(oldCol);
-            
+        if(!isGrowing){
+            int* oldRow = ll_remove_last(&(snake_p->snake_row));
+            int* oldCol = ll_remove_last(&(snake_p->snake_col));
+            free(oldRow);
+            free(oldCol);
+        }
 
 
     }
