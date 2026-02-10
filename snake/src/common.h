@@ -38,10 +38,13 @@ enum input_key { INPUT_UP, INPUT_DOWN, INPUT_LEFT, INPUT_RIGHT, INPUT_NONE };
 extern int g_game_over;  // 1 if game is over, 0 otherwise
 extern int g_score;      // game score: 1 point for every food eaten
 
-extern int snake_col; // the col number the snake head is at starting at 0
-extern int snake_row; // the row number the head of the snake is at starting 0
+//extern int snake_col; // the col number the snake head is at starting at 0
+//extern int snake_row; // the row number the head of the snake is at starting 0
 
-extern int snake_dir; // current snake heading storing INPUT_(direction)
+//extern int snake_dir; // current snake heading storing INPUT_(direction)
+
+extern char* g_name;
+extern int g_name_len;
 
 /** Snake struct. This struct is not needed until part 3!
  * Fields:

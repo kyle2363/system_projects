@@ -140,9 +140,22 @@ void place_food(int* cells, size_t width, size_t height) {
  *  - `write_into`: a pointer to the buffer to be written into.
  */
 void read_name(char* write_into) {
-    // TODO: implement! (remove the call to strcpy once you begin your
-    // implementation)
-    strcpy(write_into, "placeholder");
+    // TODO: implement! 
+    
+    printf("Name > ");
+    fflush(stdout);
+    
+    int bytes_read = read(0, write_into, 1000);
+    if (bytes_read <= 1) {
+        if (bytes_read == 0) {
+            printf("Name Invalid: must be longer than 0 characters.\n");
+        } else {
+            printf("An error has occurred, please try again.\n");
+        }
+        read_name(write_into); 
+    } else {
+        write_into[bytes_read - 1] = '\0'; 
+    }
 }
 
 /** Cleans up on game over — should free any allocated memory so that the

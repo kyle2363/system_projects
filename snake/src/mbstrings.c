@@ -1,6 +1,7 @@
 #include "mbstrings.h"
 
 #include <stddef.h>
+#include <stdio.h>
 
 /* mbslen - multi-byte string length
  * - Description: returns the number of UTF-8 code points ("characters")
@@ -26,5 +27,28 @@
  */
 size_t mbslen(const char* bytes) {
     // TODO: implement!
-    return 0;
+    if (bytes == NULL) {
+        return (size_t)-1;
+    }
+    size_t count = 0;
+    size_t i = 0;
+
+    while (bytes[i] != '\0') {
+        unsigned char b = (unsigned char)bytes[i];
+
+        if ((b & 0x80) == 0) {
+            i += 1;
+        } else if ((b & 0xE0) == 0xC0) {
+            i += 2;
+        } else if ((b & 0xF0) == 0xE0) {
+            i += 3;
+        } else if ((b & 0xF8) == 0xF0) {
+            i += 4;
+        } else {
+            return (size_t)-1;
+        }
+        count++;
+    }
+
+    return count;
 }

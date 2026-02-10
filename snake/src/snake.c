@@ -46,13 +46,13 @@ void end_game(int* cells, size_t width, size_t height, snake_t* snake_p) {
 
 
     // ****************** UNCOMMENT THIS CODE IN PART 3B ***********************
-    /*
+    
     // Render final GAME OVER PRESS ANY KEY TO EXIT screen
     render_game_over(width, height);
     usleep(1000 * 1000);  // 1000ms
     cbreak(); // Leave halfdelay mode
     getch();
-    */
+    
 
     // tell ncurses that we're done
     endwin();
@@ -114,11 +114,12 @@ int main(int argc, char** argv) {
 
     // Read in the player's name & save its name and length in global variables
     // TODO: Implement (in Part 3B)
-    // char name_buffer[1000];
-    // read_name(name_buffer);
+    char name_buffer[1000];
+    read_name(name_buffer);
     // TODO: save name_buffer 
     // TODO: save mbslen(name_buffer) 
-
+    g_name = name_buffer;
+    g_name_len = mbslen(name_buffer);
     // TODO: Remove this message and uncomment the line of code below this message
     //       (part 1A)
     /*printf(
@@ -133,7 +134,7 @@ int main(int argc, char** argv) {
     
     // TODO: implement the game loop here (part 1A)!
     
-    while(true){
+    while(g_game_over == 0){
         int key_pressed = get_input();
         usleep(100000*5);
         update(cells, width, height, &snake, key_pressed, snake_grows);
