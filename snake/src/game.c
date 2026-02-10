@@ -83,8 +83,13 @@ void update(int* cells, size_t width, size_t height, snake_t* snake_p,
                 place_food(cells, width, height);
                 cells[newCellLocation] = cells[newCellLocation] ^ FLAG_FOOD;
                 if(growing == 1 ){
-                    isGrowing = true;
+                    //isGrowing = true;
+                    grow_remaining += (growPerFood);
                 }
+            }
+            if(grow_remaining > 0){
+                isGrowing = true;
+                grow_remaining -= 1;
             }
             if(!isGrowing){
                 cells[oldCellLocation] = cells[oldCellLocation] ^ FLAG_SNAKE;
@@ -97,6 +102,10 @@ void update(int* cells, size_t width, size_t height, snake_t* snake_p,
         *newCol = (*(int*)ll_get_first(snake_p->snake_col) + col_change);
         ll_insert_first(&(snake_p->snake_row), newRow);
         ll_insert_first(&(snake_p->snake_col), newCol);
+
+        //Extra credit 
+        
+
         if(!isGrowing){
             int* oldRow = ll_remove_last(&(snake_p->snake_row));
             int* oldCol = ll_remove_last(&(snake_p->snake_col));

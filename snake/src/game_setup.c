@@ -110,6 +110,8 @@ enum board_init_status initialize_game(int** cells_p, size_t* width_p,
     if(status == INIT_SUCCESS){
         place_food(*cells_p, *width_p, *height_p);
     }
+    grow_remaining = 0;//for ec grow more then 1
+    
     return status;
 }
 

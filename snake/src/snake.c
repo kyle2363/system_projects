@@ -17,20 +17,24 @@
  */
 enum input_key get_input() {
     /* DO NOT MODIFY THIS FUNCTION */
-    int input = getch();
+    if(botLevel == 0){
+        int input = getch();
 
-    if (input == KEY_UP) {
-        return INPUT_UP;
-    } else if (input == KEY_DOWN) {
-        return INPUT_DOWN;
-    } else if (input == KEY_LEFT) {
-        return INPUT_LEFT;
-    } else if (input == KEY_RIGHT) {
-        return INPUT_RIGHT;
-    } else {
-        // if the input isn't an arrow key, we treat it as no input (could add
-        // other keys in if we want other commands, like 'pause' or 'quit')
-        return INPUT_NONE;
+        if (input == KEY_UP) {
+            return INPUT_UP;
+        } else if (input == KEY_DOWN) {
+            return INPUT_DOWN;
+        } else if (input == KEY_LEFT) {
+            return INPUT_LEFT;
+        } else if (input == KEY_RIGHT) {
+            return INPUT_RIGHT;
+        } else {
+            // if the input isn't an arrow key, we treat it as no input (could add
+            // other keys in if we want other commands, like 'pause' or 'quit')
+            return INPUT_NONE;
+        }
+    }else{
+
     }
     /* DO NOT MODIFY THIS FUNCTION */
 }

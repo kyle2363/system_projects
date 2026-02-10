@@ -46,6 +46,16 @@ extern int g_score;      // game score: 1 point for every food eaten
 extern char* g_name;
 extern int g_name_len;
 
+//EXTRA CREDIT STUFF
+#define g_EC 1 //1 if extra credit is enabled 0 if it is not
+extern int grow_remaining;
+
+extern int growPerFood;
+
+#define growPerFood 3
+
+#define botLevel 0 //0 is off, 1 is to random directions, and 2 is path finding
+
 /** Snake struct. This struct is not needed until part 3!
  * Fields:
  *  - None yet!
