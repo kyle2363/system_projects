@@ -54,7 +54,10 @@ extern int growPerFood;
 
 #define growPerFood 1 //1 is standard
 
-#define botLevel 0 //0 is off, 1 is to random directions, and 2 is path finding
+#define botLevel 2 //0 is off, 1 is to random directions, and 2 is path finding
+
+#define snakeDesign 1 //0 is the default s and 1 is the green block
+//NOTE: run make clean after changing each value
 
 /** Snake struct. This struct is not needed until part 3!
  * Fields:

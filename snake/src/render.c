@@ -97,12 +97,16 @@ void render_game(int* cells, size_t width, size_t height) {
     /* DO NOT MODIFY THIS FUNCTION */
     for (unsigned i = 0; i < width * height; ++i) {
         if (cells[i] & FLAG_SNAKE) {
-            char c = 'S';
-            if (cells[i] & FLAG_GRASS) {
-                ADD(i / width, i % width, c | COLOR_PAIR(COLOR_GRASS));
-            }
+            int isGrass = cells[i] & FLAG_GRASS;
+            if (snakeDesign == 1 && g_EC == 1) {
+                cchar_t c;
+                setcchar(&c, L"\u2588", WA_NORMAL, COLOR_GREEN, NULL);
+                ADDW(i / width, i % width, &c);
+            } 
             else {
-                ADD(i / width, i % width, c | COLOR_PAIR(COLOR_SNAKE));
+                char c = 'S';
+                short color = isGrass ? COLOR_GRASS : COLOR_SNAKE;
+                ADD(i / width, i % width, c | COLOR_PAIR(color));
             }
         } else if (cells[i] & FLAG_FOOD) {
             char c = 'O';
