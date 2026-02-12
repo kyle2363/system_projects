@@ -87,7 +87,7 @@ void update(int* cells, size_t width, size_t height, snake_t* snake_p,
                     if(g_EC == 1){
                         grow_remaining += (growPerFood);
                     }else{
-                        grow_remaining++;
+                        grow_remaining+= 1;
                     }
                 }
             }

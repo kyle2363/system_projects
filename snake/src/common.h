@@ -47,10 +47,10 @@ extern char* g_name;
 extern int g_name_len;
 
 //EXTRA CREDIT STUFF
-#define g_EC 1 //1 if extra credit is enabled 0 if it is not
+#define g_EC 0 //1 if extra credit is enabled 0 if it is not
 extern int grow_remaining;
 
-#define growPerFood 0 //1 is standard
+#define growPerFood 1 //1 is standard
 
 #define botLevel 0 //0 is off, 1 is to random directions, and 2 is path finding
 
