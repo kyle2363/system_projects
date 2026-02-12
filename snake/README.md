@@ -4,11 +4,13 @@ CSCI 0300 Project 1 - Snake
 ## Design Overview:
 Notable design choices:
 
-The snake struct is defined as a direction, and two linked list one for the current row and another for the current column. 
+The snake struct is defined as a direction, and two linked list one for the current row and another for the current column. The first item in the list is the head of the snake.
 
 There is a 0.4 seconds refresh time for the snake game 
 
+g_EC is also used to function as a easy way to turn the extra credit items on and off without changing the setting themselves. It may seem a bit redundant but it was made more for convenience of testing. 
 
+All other choice follow the assignment specified in https://csci0300.github.io/assign/projects/project1.html
 
 
 ## Collaborators: none
@@ -28,13 +30,14 @@ The Sunuwar script (used by the Sunuwar people in Nepal and India) is a example 
 
 ## Extra Credit attempted:
 
-Grow more than one length on each food
+Grow more than one length on each food. Enable in common.h.
+    Allows snake to grow n times per food eaten 
 
 Make a bot
     Create a simple bot that moves the snake in random directions! (3 points).
         uses random to pick a move direction
     Go beyond the simple bot — make it do :sparkles: better :sparkles: (3 points)
-        uses calculates one move ahead to find the next move that gets the snake closer to the food.
+        calculates one move ahead to find the next move that gets the snake closer to the food.
 
 Rather than rendering “S” characters, make a solid green snake [Hint: use Unicode characters like we do for the walls] (2 points).
 

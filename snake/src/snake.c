@@ -144,7 +144,7 @@ int main(int argc, char** argv) {
     while(g_game_over == 0){
         int key_pressed = get_input();
         //EXTRA CREDIT
-        if(botLevel == 2){
+        if(botLevel == 2 && g_EC){
             key_pressed = greedy_bfs(cells, width, height, &snake);
         }
         usleep(100000*4);

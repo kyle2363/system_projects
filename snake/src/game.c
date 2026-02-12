@@ -84,8 +84,11 @@ void update(int* cells, size_t width, size_t height, snake_t* snake_p,
                 place_food(cells, width, height);
                 cells[newCellLocation] = cells[newCellLocation] ^ FLAG_FOOD;
                 if(growing == 1 ){
-                    //isGrowing = true;
-                    grow_remaining += (growPerFood);
+                    if(g_EC == 1){
+                        grow_remaining += (growPerFood);
+                    }else{
+                        grow_remaining++;
+                    }
                 }
             }
             if(grow_remaining > 0){
