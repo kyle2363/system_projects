@@ -147,7 +147,7 @@ int main(int argc, char** argv) {
         if(botLevel == 2){
             key_pressed = greedy_bfs(cells, width, height, &snake);
         }
-        usleep(100000);
+        usleep(100000*4);
         update(cells, width, height, &snake, key_pressed, snake_grows);
         render_game(cells, width, height);
     }
