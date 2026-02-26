@@ -247,3 +247,94 @@ void print_leak_report() {
                 info.size);
     }
 }
+
+//EXTRA CREDIT
+
+/// drealloc(ptr, sz, file, line)
+///    Reallocate the dynamic memory pointed to by `ptr` to hold at least
+///    `sz` bytes, returning a pointer to the new block (and growing the 
+///    existing allocation if possible). If `ptr` is `nullptr`, behaves 
+///    like `dmalloc(sz, file, line)`. If `sz` is 0, behaves like 
+///    `dfree(ptr, file, line)`. The allocation request was at location 
+///    `file`:`line`.
+
+void* drealloc(void* ptr, size_t sz, const char* file, long line){
+    if (!ptr) {
+        return dmalloc(sz, file, line);
+    }
+    
+    if (sz == 0) {
+        dfree(ptr, file, line);
+        return nullptr;
+    }
+    
+    auto it_size = allocation_sizes.find(ptr);
+    if (it_size == allocation_sizes.end()) {
+        fprintf(stderr,
+                "MEMORY BUG: %s:%ld: invalid realloc of pointer %p, not allocated\n",
+                file, line, ptr);
+        abort();
+    }
+    
+    size_t old_size = it_size->second.size;
+    
+    if (sz > SIZE_MAX - 8) {
+        global_stats.nfail += 1;
+        global_stats.fail_size += sz;
+        return nullptr;
+    }
+    
+    char* secret_location = (char*)ptr + old_size;
+    bool match = true;
+    for (int i = 0; i < 8; i++) {
+        if (secret_location[i] != ((char*)&SECRET)[i]) {
+            match = false;
+            break;
+        }
+    }
+    if (!match) {
+        fprintf(stderr, "MEMORY BUG: %s:%ld: detected wild write during realloc of pointer %p\n",
+                file, line, ptr);
+        abort();
+    }
+    
+    void* new_ptr = base_realloc(ptr, sz + 8, old_size + 8);
+    
+    if (!new_ptr) {
+        global_stats.nfail += 1;
+        global_stats.fail_size += sz;
+        return nullptr;
+    }
+    
+    if (new_ptr != ptr) {
+        allocation_sizes.erase(it_size);
+        if (freed_ptrs.find(new_ptr) != freed_ptrs.end()) {
+            freed_ptrs.erase(new_ptr);
+        }
+    }
+    
+    global_stats.total_size += sz;
+    global_stats.ntotal += 1;
+    
+    global_stats.active_size -= old_size;
+    global_stats.active_size += sz;
+    
+    uintptr_t addr = (uintptr_t) new_ptr;
+    if (global_stats.heap_min == 0 || addr < global_stats.heap_min) {
+        global_stats.heap_min = addr;
+    }
+    if (addr + sz + 8 > global_stats.heap_max) {
+        global_stats.heap_max = addr + sz + 8;
+    }
+    
+    allocation_sizes[new_ptr] = { sz, file, line };
+    
+    char* new_secret_location = (char*)new_ptr + sz;
+    for (int i = 0; i < 8; i++) {
+        new_secret_location[i] = ((char*)&SECRET)[i];
+    }
+    
+    return new_ptr;
+}
+
+

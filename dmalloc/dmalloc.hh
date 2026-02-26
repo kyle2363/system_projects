@@ -84,6 +84,8 @@ void* base_malloc(size_t sz);
 void base_free(void* ptr);
 void base_allocator_disable(bool is_disabled);
 
+void* base_realloc(void* ptr, size_t new_sz, size_t old_sz);
+
 /// Preprocessor macros to override system versions with our versions.
 #if !DMALLOC_DISABLE
 #define malloc(sz)          dmalloc((sz), __FILE__, __LINE__)

@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <vector>
 #include <sys/mman.h>
+#include <string.h>
 
 
 // This file contains a base memory allocator guaranteed not to
@@ -89,4 +90,54 @@ static void base_allocator_atexit() {
     for (auto& alloc : frees) {
         free(reinterpret_cast<void*>(alloc.first));
     }
+}
+
+//EXTRA CREDIT
+void* base_realloc(void* ptr, size_t new_sz, size_t old_sz) {
+    if (disabled) {
+        return realloc(ptr, new_sz);
+    }
+    
+    disabled++;
+    
+    if (!ptr) {
+        disabled--;
+        return base_malloc(new_sz);
+    }
+    
+    uintptr_t ptr_addr = (uintptr_t)ptr;
+    
+    auto it = allocs.find(ptr_addr);
+    if (it == allocs.end()) {
+        disabled--;
+        return nullptr;
+    }
+    
+    size_t current_size = it->second;
+    
+    if (current_size >= new_sz) {
+        allocs[ptr_addr] = new_sz;
+        disabled--;
+        return ptr;
+    }
+    
+    void* new_ptr = base_malloc(new_sz);
+    
+    if (!new_ptr) {
+        disabled--;
+        return nullptr;
+    }
+    
+    size_t copy_size;
+    if (old_sz < new_sz) {
+        copy_size = old_sz;
+    } else {
+        copy_size = new_sz;
+    }
+    memcpy(new_ptr, ptr, copy_size);
+    
+    base_free(ptr);
+    
+    disabled--;
+    return new_ptr;
 }
