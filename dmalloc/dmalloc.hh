@@ -45,6 +45,17 @@ void dfree(void* ptr, const char* file, long line);
  */
 void* dcalloc(size_t nmemb, size_t sz, const char* file, long line);
 
+// EXTRA CREDIT
+/// drealloc(ptr, sz, file, line)
+///    Reallocate the dynamic memory pointed to by `ptr` to hold at least
+///    `sz` bytes, returning a pointer to the new block (and growing the 
+///    existing allocation if possible). If `ptr` is `nullptr`, behaves 
+///    like `dmalloc(sz, file, line)`. If `sz` is 0, behaves like 
+///    `dfree(ptr, file, line)`. The allocation request was at location 
+///    `file`:`line`.
+
+void* drealloc(void* ptr, size_t sz, const char* file, long line);
+
 // struct to store global information about the dalloc functions
 struct dmalloc_stats {
     unsigned long long nactive;         // # active allocations
