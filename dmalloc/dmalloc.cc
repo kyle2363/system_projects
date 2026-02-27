@@ -8,6 +8,34 @@
 #include <limits.h>
 
 
+// Base allocator helper function - must use system malloc/free
+void* base_realloc(void* ptr, size_t new_sz, size_t old_sz) {
+    if (!ptr) {
+        return base_malloc(new_sz);
+    }
+    
+    if (new_sz == 0) {
+        base_free(ptr);
+        return nullptr;
+    }
+    
+    // Allocate new memory
+    void* new_ptr = base_malloc(new_sz);
+    
+    if (!new_ptr) {
+        return nullptr;
+    }
+    
+    // Copy old data to new location
+    size_t copy_size = (old_sz < new_sz) ? old_sz : new_sz;
+    memcpy(new_ptr, ptr, copy_size);
+    
+    // Free old memory
+    base_free(ptr);
+    
+    return new_ptr;
+}
+
 struct allocation_info {
     size_t size;
     const char* file;
