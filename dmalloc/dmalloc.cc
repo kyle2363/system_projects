@@ -7,8 +7,7 @@
 #include <unordered_map>
 #include <limits.h>
 
-
-// Base allocator helper function - must use system malloc/free
+//EXTRA CREDIT CODE
 void* base_realloc(void* ptr, size_t new_sz, size_t old_sz) {
     if (!ptr) {
         return base_malloc(new_sz);
