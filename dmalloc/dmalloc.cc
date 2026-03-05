@@ -140,7 +140,7 @@ void dfree(void* ptr, const char* file, long line) {
         fprintf(stderr,
                 "MEMORY BUG: %s:%ld: invalid free of pointer %p, double free\n",
                 file, line, ptr);
-        abort();
+        abort();  
     }
 
     auto it_size = allocation_sizes.find(ptr);

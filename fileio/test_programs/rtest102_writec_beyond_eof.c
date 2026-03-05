@@ -20,7 +20,8 @@ int main() {
     assert(io300_writec(f, 'Y') == 'Y');
 
     io300_seek(f, 0);
-    assert(io300_read(f, buf, 6) == 6);
+    int read = io300_read(f, buf, 6);
+    assert(read == 6);
     assert(strncmp(buf, "\0\0\0\0\0Y", 6) == 0);
 
     io300_close(f);

@@ -21,7 +21,8 @@ int main() {
         0x00, 0x01, 0x03};  // File data can be any bytes, not just characters!
 
     for (int i = 0; i < 3; i++) {
-        io300_writec(f, contents[i]);
+        printf("call\n");
+        printf("%d\n", io300_writec(f, contents[i]));
     }
 
     io300_close(f);

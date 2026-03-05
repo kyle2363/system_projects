@@ -25,5 +25,5 @@ int main() {
     assert(io300_readc(f) == -1);
     io300_close(f);
 
-    check_file_matches_string(TEST_FILE, "this aaaa teaaa");
+    check_file_matches_string(TEST_FILE, "this aaaa teaaa"); 
 }
