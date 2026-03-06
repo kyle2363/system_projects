@@ -274,20 +274,10 @@ int io300_readc(struct io300_file* const f) {
         io300_seek(f, block_start);
     }
 
-    //printf("CACHE NOT HIT (READ)\n"); 
-    printf("2  pos = %ld     OS_pos = %ld   cache_pos= %ld      ", f->current_pos,f->os_pos, f->cached_file_index);
-    printf("\nbefore\n");
-    for (int j = 0; j < 8; j++) {
-        printf("%d ", f->cache[j]); 
-    }
-    lseek(f->fd,block_start, 0);
+
+    io300_seek(f,block_start);
     long b_read = read(f->fd, f->cache, CACHE_SIZE);
-    //printf("bread = %ld\n", b_read);
-    printf("\nafter\n");
-    for (int j = 0; j < 8; j++) {
-        printf("%d ", f->cache[j]); 
-    }
-    printf("\n");
+
     if (b_read >= 1) {
         f->cache_offset = 0;
         f->cache_modified = 0;
@@ -430,6 +420,8 @@ ssize_t io300_read(struct io300_file* const f, char* const buff,
                 flush(f);
                 f->cache_modified = 0;
             }
+
+            
 
             if (f->os_pos != f->current_pos) {
                 io300_seek(f, f->current_pos);
