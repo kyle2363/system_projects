@@ -247,7 +247,7 @@ int io300_readc(struct io300_file* const f) {
     if(f->cached_file_index <= f->current_pos && 
         f->cached_file_index + f->cached_data_size > f->current_pos){
         f->current_pos++;
-        //printf("CACHE HIT (READ)\n");
+        printf("CACHE HIT (READC)\n");
         //printf("Char: %d  ",f->cache[(f->current_pos-1) - f->cached_file_index]);
         return (unsigned char)f->cache[(f->current_pos-1) - f->cached_file_index];
     }
@@ -276,6 +276,8 @@ int io300_readc(struct io300_file* const f) {
 
 
     io300_seek(f,block_start);
+    f->stats.read_calls++;
+    printf("CACHE MISS (READC)\n");
     long b_read = read(f->fd, f->cache, CACHE_SIZE);
 
     if (b_read >= 1) {
@@ -329,7 +331,8 @@ int io300_writec(struct io300_file* f, int ch) {
             io300_seek(f, block_start);
             f->os_pos = block_start;
         }
-        
+        f->stats.read_calls++;
+        printf("CACHE MISS (BEYOND)(WRITEC)\n");
         ssize_t bytes_read = read(f->fd, f->cache, BLOCK_SIZE);
         
         f->cached_file_index = block_start;
@@ -342,7 +345,7 @@ int io300_writec(struct io300_file* f, int ch) {
     if (f->cached_data_size > 0 && f->cached_file_index <= f->current_pos &&
         f->current_pos < f->cached_file_index + BLOCK_SIZE) {
         
-        //printf("CACHE HIT 1 (WRITE)\n"); 
+        printf("CACHE HIT 1 (WRITE)\n"); 
         
         int offset = f->current_pos - f->cached_file_index;
         f->cache[offset] = c;
@@ -378,6 +381,8 @@ int io300_writec(struct io300_file* f, int ch) {
             io300_seek(f, block_start);
             f->os_pos = block_start;
         }
+        f->stats.read_calls++;
+        printf("CACHE MISS 1 (WRITE)\n"); 
         ssize_t b_read = read(f->fd, f->cache, CACHE_SIZE);
         if (b_read > 0) {
             f->cached_data_size = b_read;
@@ -429,6 +434,8 @@ ssize_t io300_read(struct io300_file* const f, char* const buff,
             }
 
             // Read new block into cache
+            f->stats.read_calls++;
+            printf("READ (READ)\n");
             ssize_t bytes = read(f->fd, f->cache, CACHE_SIZE);
             if (bytes <= 0) {
                 break;  
@@ -458,15 +465,58 @@ ssize_t io300_read(struct io300_file* const f, char* const buff,
 ssize_t io300_write(struct io300_file* const f, const char* buff,
                     size_t const sz) {
     check_invariants(f);
-    f->stats.write_calls++;
+    //f->stats.write_calls++; //might need
 
     size_t total_written = 0;
 
+    if (f->current_pos > f->file_size) {
+
+        if (f->cache_modified == 1) {
+            flush(f);
+            f->cache_modified = 0;
+        }
+        long old_pos = f->current_pos;
+        long gap = f->current_pos - f->file_size;
+        io300_seek(f, f->file_size);
+        f->os_pos = f->file_size;
+        
+        char zeros[CACHE_SIZE];
+        memset(zeros, 0, CACHE_SIZE);
+        
+        while (gap > 0) {
+            size_t chunk = (gap > CACHE_SIZE) ? CACHE_SIZE : gap;
+            ssize_t written = write(f->fd, zeros, chunk);
+            if (written > 0) {
+                f->file_size += written;
+                f->os_pos += written;
+            }
+            gap -= written;
+        }
+        
+        long block_start = (f->current_pos / CACHE_SIZE) * CACHE_SIZE;
+        
+        if (f->os_pos != block_start) {
+            io300_seek(f, block_start);
+            f->os_pos = block_start;
+        }
+        f->stats.read_calls++;
+        printf("CACHE MISS (BEYOND)(WRITEC)\n");
+        ssize_t bytes_read = read(f->fd, f->cache, CACHE_SIZE);
+        
+        f->cached_file_index = block_start;
+        f->cached_data_size = (bytes_read > 0) ? bytes_read : 0;
+        f->cache_modified = 0;
+        f->os_pos = block_start + f->cached_data_size;
+        io300_seek(f, old_pos);
+    }
+
     while (total_written < sz) {
         // Check if current_pos is within the current cache block.
-        int in_cache = (f->cached_file_index >= 0) &&
+        int in_cache = (f->cached_data_size > 0) &&
                         (f->cached_file_index <= f->current_pos) &&
                         (f->current_pos < f->cached_file_index + CACHE_SIZE);
+
+        long old_pos = f->current_pos;
 
         if (!in_cache) {
             if (f->cache_modified) {
@@ -474,19 +524,22 @@ ssize_t io300_write(struct io300_file* const f, const char* buff,
                 f->cache_modified = 0;
             }
 
-            long block_start = f->current_pos;
+            //long block_start = f->current_pos;
+            long block_start = (f->current_pos / CACHE_SIZE) * CACHE_SIZE;
 
             if (f->os_pos != block_start) {
-                lseek(f->fd, block_start, SEEK_SET);
+                io300_seek(f, block_start);
                 f->os_pos = block_start;
             }
-
+            f->stats.read_calls++;
+            printf("READ (WRITE)\n");
             ssize_t bytes = read(f->fd, f->cache, CACHE_SIZE);
             f->cached_file_index = block_start;
             f->cached_data_size  = (bytes > 0) ? bytes : 0;
             f->os_pos            = block_start + f->cached_data_size;
             f->cache_modified    = 0;
         }
+        f->current_pos = old_pos;
 
         long offset         = f->current_pos - f->cached_file_index;
         size_t space_left   = (size_t)(CACHE_SIZE - offset);
@@ -553,7 +606,7 @@ int flush(struct io300_file* const f) {
     
     io300_seek(f, f->cached_file_index);
     f->current_pos = f->cached_file_index;  
-    
+    f->stats.write_calls++;
     ssize_t written = write(f->fd, f->cache, f->cached_data_size);
     
     if (written > 0) {
