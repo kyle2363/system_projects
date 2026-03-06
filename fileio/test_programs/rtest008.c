@@ -38,23 +38,6 @@ int main() {
         io300_writec(f, value);
 
         expected[pos] = value;
-        if(i%100 == 0){
-            io300_seek(f, 0);
-            io300_read(f, readData2, 128);
-
-            printf("readData2\n");
-
-            for (int j = 0; j < 128; j++) {
-                printf("%d ", readData2[j]); 
-            }
-
-            printf("\n expected\n");
-
-            for (int j = 0; j < 128; j++) {
-                printf("%d ", expected[j]); 
-            }
-            printf("\n\n");
-        }
     }
     
 

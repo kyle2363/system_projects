@@ -247,7 +247,7 @@ int io300_readc(struct io300_file* const f) {
     if(f->cached_file_index <= f->current_pos && 
         f->cached_file_index + f->cached_data_size > f->current_pos){
         f->current_pos++;
-        printf("CACHE HIT (READC)\n");
+        //printf("CACHE HIT (READC)\n");
         //printf("Char: %d  ",f->cache[(f->current_pos-1) - f->cached_file_index]);
         return (unsigned char)f->cache[(f->current_pos-1) - f->cached_file_index];
     }
@@ -275,9 +275,8 @@ int io300_readc(struct io300_file* const f) {
     }
 
 
-    io300_seek(f,block_start);
     f->stats.read_calls++;
-    printf("CACHE MISS (READC)\n");
+    //printf("CACHE MISS (READC)\n");
     long b_read = read(f->fd, f->cache, CACHE_SIZE);
 
     if (b_read >= 1) {
@@ -332,7 +331,7 @@ int io300_writec(struct io300_file* f, int ch) {
             f->os_pos = block_start;
         }
         f->stats.read_calls++;
-        printf("CACHE MISS (BEYOND)(WRITEC)\n");
+        //printf("CACHE MISS (BEYOND)(WRITEC)\n");
         ssize_t bytes_read = read(f->fd, f->cache, BLOCK_SIZE);
         
         f->cached_file_index = block_start;
@@ -345,7 +344,7 @@ int io300_writec(struct io300_file* f, int ch) {
     if (f->cached_data_size > 0 && f->cached_file_index <= f->current_pos &&
         f->current_pos < f->cached_file_index + BLOCK_SIZE) {
         
-        printf("CACHE HIT 1 (WRITE)\n"); 
+        //printf("CACHE HIT 1 (WRITE)\n"); 
         
         int offset = f->current_pos - f->cached_file_index;
         f->cache[offset] = c;
@@ -382,7 +381,7 @@ int io300_writec(struct io300_file* f, int ch) {
             f->os_pos = block_start;
         }
         f->stats.read_calls++;
-        printf("CACHE MISS 1 (WRITE)\n"); 
+        //printf("CACHE MISS 1 (WRITE)\n"); 
         ssize_t b_read = read(f->fd, f->cache, CACHE_SIZE);
         if (b_read > 0) {
             f->cached_data_size = b_read;
@@ -415,6 +414,8 @@ ssize_t io300_read(struct io300_file* const f, char* const buff,
     /*for(int i=0;i<6;i++){
         printf("%d ", f->cache[i]);
     }*/
+    if (f->current_pos >= f->file_size)
+        return 0;
     while (total_read < sz) {
 
         // If current position is not inside cache → fetch new block
@@ -426,25 +427,29 @@ ssize_t io300_read(struct io300_file* const f, char* const buff,
                 f->cache_modified = 0;
             }
 
-            
-
-            if (f->os_pos != f->current_pos) {
-                io300_seek(f, f->current_pos);
-                f->os_pos = f->current_pos;
+            long old_pos = f->current_pos;
+            long block_start = (f->current_pos / CACHE_SIZE) * CACHE_SIZE;
+            f->cached_file_index = block_start;
+            if (f->os_pos != block_start){
+                io300_seek(f, block_start);
+                f->os_pos = block_start;
             }
 
             // Read new block into cache
             f->stats.read_calls++;
-            printf("READ (READ)\n");
+            //printf("READ (READ)\n");
             ssize_t bytes = read(f->fd, f->cache, CACHE_SIZE);
             if (bytes <= 0) {
                 break;  
             }
 
-            f->cached_file_index = f->current_pos;
+            //f->cached_file_index = f->current_pos;
             f->cached_data_size = bytes;
             f->os_pos += bytes;
+            f->current_pos = old_pos;
         }
+        if (f->current_pos >= f->file_size)
+            break;
 
         size_t cache_offset = f->current_pos - f->cached_file_index;
         size_t bytes_available = f->cached_data_size - cache_offset;
@@ -500,7 +505,7 @@ ssize_t io300_write(struct io300_file* const f, const char* buff,
             f->os_pos = block_start;
         }
         f->stats.read_calls++;
-        printf("CACHE MISS (BEYOND)(WRITEC)\n");
+        //printf("CACHE MISS (BEYOND)(WRITEC)\n");
         ssize_t bytes_read = read(f->fd, f->cache, CACHE_SIZE);
         
         f->cached_file_index = block_start;
@@ -532,7 +537,7 @@ ssize_t io300_write(struct io300_file* const f, const char* buff,
                 f->os_pos = block_start;
             }
             f->stats.read_calls++;
-            printf("READ (WRITE)\n");
+            //printf("READ (WRITE)\n");
             ssize_t bytes = read(f->fd, f->cache, CACHE_SIZE);
             f->cached_file_index = block_start;
             f->cached_data_size  = (bytes > 0) ? bytes : 0;

@@ -10,25 +10,31 @@
 #define FILE_SIZE 20
 
 int main() {
+    printf("hi");
     test_init();
     assert(CACHE_SIZE == 8);
-
+    printf("hi");
     // Create file with initial content
     struct io300_file* f = create_file_from_string(TEST_FILE, "initial data");
 
     // Fill test data
     char contents[FILE_SIZE];
+    printf("hi");
     for (int i = 0; i < FILE_SIZE; i++) contents[i] = i;
 
     char readData[FILE_SIZE];
 
     // Write test data from start
+    printf("hi");
     io300_seek(f, 0);
+    printf("hi");
     io300_write(f, contents, FILE_SIZE);
     io300_seek(f, 0);
 
     // Read everything in one bulk read
+    printf("hi");
     ssize_t bytesRead = io300_read(f, readData, FILE_SIZE);
+    printf("hi");
     assert(bytesRead == FILE_SIZE);
 
     // Verify contents match
