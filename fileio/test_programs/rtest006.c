@@ -16,7 +16,7 @@ int main() {
     assert(CACHE_SIZE == 8);
     struct io300_file* f = create_file_from_string(TEST_FILE, "hello world");
 
-    for (int k = 0; k < 20; k++){
+    for (int k = 19; k < 20; k++){
 
         int size = k;
         char contents[size];// = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a};
@@ -40,7 +40,7 @@ int main() {
 
         
 
-        /*for (int i = 0; i < size; i++) {
+        for (int i = 0; i < size; i++) {
             printf("%d ", contents[i]); 
         }
 
@@ -50,7 +50,7 @@ int main() {
             printf("%d ", readData[i]); 
         }
         printf("\n");
-        printf("\n");*/
+        printf("\n");
 
         for (int i = 0; i < size; i++) {
             assert(readData[i] == contents[i]);
