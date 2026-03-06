@@ -27,7 +27,7 @@ int main() {
 
     // Read bytes one at a time
     for (int i = 0; i < 11; i++) {
-        for (int j = 0; j < 11; j++) {
+        /*for (int j = 0; j < 11; j++) {
             printf("%d ", contents[j]); 
         }
     
@@ -36,7 +36,7 @@ int main() {
         for (int j = 0; j < 11; j++) {
             printf("%d ", readData[i]); 
         }
-        printf("\n"); 
+        printf("\n"); */
         readData[i] = io300_readc(f);
     }
 
