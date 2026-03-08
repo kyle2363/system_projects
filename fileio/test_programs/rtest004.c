@@ -1,5 +1,5 @@
 /*
- * rtest004.c - io300_readc
+ * rtest004.c - simple io300_readc test
  */
 
 #include <assert.h>
@@ -27,12 +27,11 @@ int main() {
 
     // Read bytes one at a time
     for (int i = 0; i < 11; i++) {
-        printf("\n"); 
         readData[i] = io300_readc(f);
     }
 
     
-
+    printf("Data: \n");
     for (int i = 0; i < 11; i++) {
         printf("%d ", contents[i]); 
     }
@@ -42,7 +41,6 @@ int main() {
     for (int i = 0; i < 11; i++) {
         printf("%d ", readData[i]); 
     }
-    printf("\n");
     printf("\n");
 
     for (int i = 0; i < 11; i++) {

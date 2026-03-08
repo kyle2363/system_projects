@@ -1,5 +1,5 @@
 /*
- * rtest004.c - io300_readc
+ * rtest007.c - io300_readc
  */
 
 #include <assert.h>

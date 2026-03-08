@@ -24,7 +24,6 @@ int main() {
         contents2[i] = 0;
     }
 
-
     struct io300_file* f = create_file_from_string(TEST_FILE, contents);
     io300_seek(f, 0);
     io300_write(f, contents, size);
@@ -34,37 +33,12 @@ int main() {
 
     for (int k = 0; k < size; k++){ 
         int ch = io300_readc(f);
-        //io300_seek(f, k);
         io300_writec(f2, ch);
-        //io300_seek(f, k);
         readData[k] = ch;
-        
-        /*for (int i = 0; i < size; i++) {
-            printf("%d ", contents[i]); 
-        }
-
-        printf("\n"); 
-
-        for (int i = 0; i < size; i++) {
-            printf("%d ", readData[i]); 
-        }
-        printf("\n");
-        printf("\n");*/
     }
-    for (int i = 0; i < size; i++) {
-        printf("%d ", contents[i]); 
-    }
-
-    printf("\n"); 
-
-    for (int i = 0; i < size; i++) {
-        printf("%d ", readData[i]); 
-    }
-    printf("\n");
-    printf("\n");
+    
     for (int i = 0; i < size; i++) {
         assert(readData[i] == contents[i]);
     }
-
     io300_close(f); 
 }

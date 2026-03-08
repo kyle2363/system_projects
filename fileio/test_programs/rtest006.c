@@ -1,5 +1,5 @@
 /*
- * rtest004.c - io300_readc
+ * rtest006.c - read one byte at a time for mutiple file sizes backwards
  */
 
 #include <assert.h>
@@ -16,7 +16,7 @@ int main() {
     assert(CACHE_SIZE == 8);
     struct io300_file* f = create_file_from_string(TEST_FILE, "hello world");
 
-    for (int k = 19; k < 20; k++){
+    for (int k = 0; k < 20; k++){
 
         int size = k;
         char contents[size];// = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a};
@@ -27,12 +27,10 @@ int main() {
 
         char readData[size]; 
 
-        // Write data to file
         io300_seek(f, 0);
         io300_write(f, contents, size);
         io300_seek(f, 0);
-
-        // Read bytes one at a time
+    
         for (int i = size-1; i >= 0; i--) {
             io300_seek(f, i);
             readData[i] = io300_readc(f);

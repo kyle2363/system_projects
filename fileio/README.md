@@ -19,8 +19,12 @@ none
 ## Extra Credit attempted
 
 Help us improve performance!(2pt)
+    form submitted.
 
 Adaptive Caching (added but removed in favor of blocking)
+    Blocking was favored over directional caching to solve the issue with what to do about the 
+    start and end of files, allow access to data to the left and right of current position, being simpler to implement, and still maintaining the speed of forward/backward caching especially in sequential situations. 
+    Note on last point, while directional caching may initially have a slight boost over blocks when starting in the middle of a block, once the boundary is met the speed is the same as the number of cache hits/misses are the same.
 
 Diabolical byte_cat 
     The diabolical_byte_cat program performs frequent small seeks while reading bytes.
