@@ -17,7 +17,7 @@
  */
 
 #ifndef CACHE_SIZE
-#define CACHE_SIZE 32
+#define CACHE_SIZE 8
 #endif
 
 #if (CACHE_SIZE < 4)
@@ -257,14 +257,6 @@ int io300_readc(struct io300_file* const f) {
 
     // TODO: Implement!
     //unsigned char c;
-    /*if(f->os_pos != f->current_pos){
-        io300_seek(f, f->current_pos);
-    }
-    
-
-    if(f->current_pos < f->cached_file_index && f->current_pos > CACHE_SIZE+1){
-        io300_seek(f, f->current_pos - CACHE_SIZE + 1);
-    }*/
     long block_start = ((f->current_pos / CACHE_SIZE)) * CACHE_SIZE;
     f->cached_file_index = block_start;
     long old_cur_pos = f->current_pos;
@@ -281,7 +273,7 @@ int io300_readc(struct io300_file* const f) {
     if (b_read >= 1) {
         f->cache_offset = 0;
         f->cache_modified = 0;
-        f->cached_data_size = b_read; //ASSUMED might need to change
+        f->cached_data_size = b_read; 
 
         
         f->os_pos = block_start + b_read;
@@ -298,8 +290,28 @@ int io300_writec(struct io300_file* f, int ch) {
     
     unsigned char const c = (unsigned char)ch;
     const int BLOCK_SIZE = CACHE_SIZE;
-    if (f->current_pos > f->file_size) {
 
+    if (f->cached_data_size > 0 && f->cached_file_index <= f->current_pos &&
+        f->current_pos < f->cached_file_index + BLOCK_SIZE) {
+        
+        int offset = f->current_pos - f->cached_file_index;
+        f->cache[offset] = c;
+        f->cache_modified = 1;
+
+        if (offset >= f->cached_data_size) {
+            f->cached_data_size = offset + 1;
+        }
+
+        f->current_pos++;
+        
+        if (f->current_pos > f->file_size) {
+            f->file_size = f->current_pos;
+        }
+
+        return c;
+    }
+
+    if (f->current_pos > f->file_size) {
         if (f->cache_modified == 1) {
             flush(f);
             f->cache_modified = 0;
@@ -338,28 +350,6 @@ int io300_writec(struct io300_file* f, int ch) {
         f->cache_modified = 0;
         f->os_pos = block_start + f->cached_data_size;
         io300_seek(f, old_pos);
-    }
-
-    if (f->cached_data_size > 0 && f->cached_file_index <= f->current_pos &&
-        f->current_pos < f->cached_file_index + BLOCK_SIZE) {
-        
-        //printf("CACHE HIT 1 (WRITE)\n"); 
-        
-        int offset = f->current_pos - f->cached_file_index;
-        f->cache[offset] = c;
-        f->cache_modified = 1;
-
-        if (offset >= f->cached_data_size) {
-            f->cached_data_size = offset + 1;
-        }
-
-        f->current_pos++;
-        
-        if (f->current_pos > f->file_size) {
-            f->file_size = f->current_pos;
-        }
-
-        return c;
     }
 
     //long old_cache_pos = f->cached_file_index;

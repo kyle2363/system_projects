@@ -32,7 +32,7 @@ int main() {
     struct io300_file* f2 = create_file_from_string(TEST_FILE_2, contents2);
     io300_seek(f2, 0);
 
-    for (int k = 0; k < size; k++){
+    for (int k = 0; k < size; k++){ 
         int ch = io300_readc(f);
         //io300_seek(f, k);
         io300_writec(f2, ch);
