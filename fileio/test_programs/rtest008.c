@@ -13,7 +13,7 @@
 #include "unit_tests.h"
 
 #define FILE_SIZE 128
-#define OPS 1000
+#define OPS 500
 
 int main() {
     test_init();

@@ -17,7 +17,7 @@
  */
 
 #ifndef CACHE_SIZE
-#define CACHE_SIZE 8
+#define CACHE_SIZE 32
 #endif
 
 #if (CACHE_SIZE < 4)
@@ -366,30 +366,6 @@ int io300_writec(struct io300_file* f, int ch) {
 
     fetch(f);
     long old_pos = f->current_pos;
-    /*
-    if (f->cache_modified == 1) {
-        flush(f);
-        f->cache_modified = 0;
-    }
-    long old_pos = f->current_pos;
-
-    long block_start = (f->current_pos / CACHE_SIZE) * CACHE_SIZE;
-    f->cached_file_index = block_start;
-    f->cached_data_size = 0;
-
-    if (block_start < f->file_size) {
-        if (f->os_pos != block_start) {
-            io300_seek(f, block_start);
-            f->os_pos = block_start;
-        }
-        f->stats.read_calls++;
-        //printf("CACHE MISS 1 (WRITE)\n"); 
-        ssize_t b_read = read(f->fd, f->cache, CACHE_SIZE);
-        if (b_read > 0) {
-            f->cached_data_size = b_read;
-            f->os_pos = block_start + b_read;
-        }
-    }*/
     
     
     int offset = old_pos - f->cached_file_index;
@@ -423,7 +399,8 @@ ssize_t io300_read(struct io300_file* const f, char* const buff,
         // If current position is not inside cache → fetch new block
         if (!(f->cached_file_index <= f->current_pos &&
         f->current_pos < f->cached_file_index + f->cached_data_size)) {
-            fetch(f);
+            if (fetch(f) == -1)//check if this is needed
+                break;
         }
         if (f->current_pos >= f->file_size)
             break;
@@ -481,7 +458,7 @@ ssize_t io300_write(struct io300_file* const f, const char* buff,
             io300_seek(f, block_start);
             f->os_pos = block_start;
         }
-        f->stats.read_calls++;
+        f->stats.write_calls++;
         //printf("CACHE MISS (BEYOND)(WRITEC)\n");
         ssize_t bytes_read = read(f->fd, f->cache, CACHE_SIZE);
         
@@ -526,7 +503,7 @@ ssize_t io300_write(struct io300_file* const f, const char* buff,
             f->file_size = f->current_pos;
         }
     }
-
+ 
     return (ssize_t)total_written;
 }
 
