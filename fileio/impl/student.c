@@ -469,7 +469,7 @@ int flush(struct io300_file* const f) {
      * Feel free to add arguments if needed, but if you do, be sure to
      * modify the function prototype (at the top of the file) to match!
      */
-    if (f->cache_modified == 0 || f->cached_data_size == 0) {
+    if(f->cache_modified == 0 || f->cached_data_size == 0) {
         return 0; 
     }
     os_seek(f, f->cached_file_index);
