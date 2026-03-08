@@ -1,0 +1,15 @@
+performance result: byte_cat: size=10M, stdio=0.16s, student=0.64s, ratio=4.00
+performance result: reverse_byte_cat: size=10M, stdio=11.74s, student=11.52s, ratio=0.98
+performance result: block_cat: size=10M, stdio=0.03s, student=0.07s, ratio=2.33
+performance result: reverse_block_cat: size=10M, stdio=0.47s, student=0.47s, ratio=1.00
+performance result: random_block_cat: size=10M, stdio=0.07s, student=0.13s, ratio=1.86
+performance result: stride_cat: size=10M, stdio=16.67s, student=20.64s, ratio=1.24
+======= PERFORMANCE RESULTS =======
+byte_cat: 4.0x stdio's runtime
+reverse_byte_cat: 0.98x stdio's runtime
+block_cat: 2.33x stdio's runtime
+reverse_block_cat: 1.0x stdio's runtime
+random_block_cat: 1.86x stdio's runtime
+stride_cat: 1.24x stdio's runtime
+
+3/8/26 3:22PM
