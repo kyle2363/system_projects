@@ -236,7 +236,7 @@ struct program_image_segment {
     // Return the user virtual address where the segment should be loaded.
     uintptr_t va() const;
     // Return the size of the segment, including zero-initialized space.
-    size_t size() const;
+    size_t size() const; 
     // Return a pointer to the first byte of data in this segment.
     const char* data() const;
     // Return the number of data bytes that should be copied from `data()`.

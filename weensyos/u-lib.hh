@@ -89,7 +89,7 @@ inline void sys_yield() {
     make_syscall(SYSCALL_YIELD);
 }
 
-// sys_page_alloc(addr)
+// sys_page_alloc(addr) 
 //    Allocate a page of memory at address `addr` for this process. The
 //    newly-allocated memory is initialized to 0. Any memory previously
 //    located at `addr` should be freed. Returns 0 on success. If there is a

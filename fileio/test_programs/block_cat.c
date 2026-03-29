@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
         ssize_t const r = io300_read(in, buffer, buffer_size);
         if (r == 0 || r == -1) {
             // input file empty
-            break;
+            break; 
         }
 
         if (io300_write(out, buffer, r) == -1) {
