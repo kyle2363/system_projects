@@ -157,6 +157,7 @@ void kfree(void* kptr) {
     // TODO:  Implement!
     if (kptr == nullptr) return;
     physpages[(uintptr_t)kptr / PAGESIZE].refcount--;
+
 }
 
 void log_program_info(const char* program_name) {
@@ -456,7 +457,6 @@ pid_t syscall_fork() {
 
     for (vmiter it(old_pt, PROC_START_ADDR); it.va() < MEMSIZE_VIRTUAL; it += PAGESIZE) {
         if (it.present() && it.user()){
-
             if(it.writable()){
                 void* new_pa = kalloc(PAGESIZE); 
                 if (!new_pa) {
@@ -473,9 +473,10 @@ pid_t syscall_fork() {
                     return -1;
                 }
             }else{
+                physpages[it.pa() / PAGESIZE].refcount++;
                 int r = vmiter(new_pt, it.va()).try_map(it.pa(), it.perm());
                 if (r < 0) {
-                    kfree((void*)it.pa());
+                    physpages[it.pa() / PAGESIZE].refcount--;
                     free_pagetable(new_pt);
                     return -1;
                 }
@@ -498,7 +499,8 @@ pid_t syscall_fork() {
 //    implements the specification for `sys_exit` in `u-lib.hh`.
 void syscall_exit() {
     // TODO:  Implement!
-    panic("Unexpected system call %ld!\n", SYSCALL_EXIT);
+    free_pagetable(current->pagetable);
+    current->state = P_FREE;
 }
 
 // free_pagetable(x86_64_pagetable *pagetable)
@@ -509,6 +511,16 @@ void syscall_exit() {
 //     prototype at the top of the file as well!)
 void free_pagetable(x86_64_pagetable *pagetable) {
     // TODO:  Implement!  (If you choose to use this helper)
+    for (vmiter it(pagetable, 0); it.va() < MEMSIZE_VIRTUAL; it += PAGESIZE) {
+        if (it.present() && it.user() && it.pa()!=0xB8000){
+            kfree((void*)it.pa());
+        }
+    }
+
+    for (ptiter it(pagetable); it.va() < MEMSIZE_VIRTUAL; it.next()) {
+        kfree((void*)it.pa());
+    }
+    kfree(pagetable);
 }
 
 
