@@ -163,7 +163,7 @@ void kfree(void* kptr) {
 
     int pn = pa / PAGESIZE;
 
-    assert(pn >= 0 && pn < NPAGES);
+    assert(pn >= 0 && (uint32_t)pn < NPAGES);
 
     assert(physpages[pn].refcount > 0);
     physpages[pn].refcount--;
@@ -248,6 +248,11 @@ void process_setup(pid_t pid, const char* program_name) {
 
     ptable[pid].regs.reg_rsp = stack_addr + PAGESIZE;
     int r = vmiter(pt, stack_addr).try_map(stack_pa,PTE_P | PTE_W | PTE_U);
+    if (r < 0) {
+        kfree(stack_pa);
+        free_pagetable(pt);
+        return;
+    }
 
     // mark process as runnable
     ptable[pid].state = P_RUNNABLE;
@@ -709,7 +714,7 @@ int syscall_page_free(uintptr_t addr, size_t len) {
 
         uintptr_t pa = it.pa();
 
-        it.try_map((uintptr_t)0, 0);
+        it.map((uintptr_t)0, 0);
         kfree((void*) pa);   
     }
 
