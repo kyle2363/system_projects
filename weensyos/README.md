@@ -5,7 +5,13 @@ Project 4 - WeensyOS
 
 ## Design Overview
 
+No notable design choices
+
 ## Collaborators
 
+None
+
 ## Extra Credit Attempted
+
+None
 
