@@ -111,6 +111,34 @@ inline pid_t sys_fork() {
     return make_syscall(SYSCALL_FORK);
 }
 
+//EC
+
+//syscall_page_free(addr, len)
+//    Unmaps all pages in [addr, addr+len):
+//    - addr must be page-aligned and len must be > 0
+//    - only unmaps pages that are present and user-accessible
+//    - decrements refcount; frees physical page when refcount hits 0
+inline int sys_page_free(uintptr_t addr, size_t len) {
+    return make_syscall(SYSCALL_PAGE_FREE, addr, (uintptr_t) len);
+}
+
+
+// syscall_sleep()
+// a system call that puts the calling process to 
+//sleep until a given amount of time (measured in ticks) elapses.
+inline int sys_sleep(unsigned long ticks_to_sleep) {
+    return make_syscall(SYSCALL_SLEEP, ticks_to_sleep);
+}
+
+// syscall_kill()
+// a system call that lets one process kill another process
+inline int sys_kill(pid_t pid) {
+    return make_syscall(SYSCALL_KILL, (uintptr_t) pid);
+}
+
+
+
+
 // sys_exit()
 //    Exit this process. Does not return.
 [[noreturn]] inline void sys_exit() {

@@ -43,6 +43,8 @@ uintptr_t syscall(regstate* regs);
 void memshow();
 void free_pagetable(x86_64_pagetable *pagetable);
 
+int enable_tick = 1; //enable Extra credit sleep
+
 
 // kernel_start(command)
 //    Initialize the hardware and processes and start running. The `command`
@@ -156,7 +158,19 @@ void kfree(void* kptr) {
 
     // TODO:  Implement!
     if (kptr == nullptr) return;
-    physpages[(uintptr_t)kptr / PAGESIZE].refcount--;
+    uintptr_t pa = (uintptr_t) kptr;
+    assert(pa % PAGESIZE == 0);
+
+    int pn = pa / PAGESIZE;
+
+    assert(pn >= 0 && pn < NPAGES);
+
+    assert(physpages[pn].refcount > 0);
+    physpages[pn].refcount--;
+
+    if (physpages[pn].refcount == 0) {
+        memset(kptr, 0xCC, PAGESIZE);
+    }
 
 }
 
@@ -221,6 +235,8 @@ void process_setup(pid_t pid, const char* program_name) {
     // mark entry point
     ptable[pid].regs.reg_rip = pgm.entry();
 
+    ptable[pid].wakeuptick = 0;
+
     // allocate and map stack segment
     // Compute process virtual address for stack page
     uintptr_t stack_addr = round_down(MEMSIZE_VIRTUAL - PAGESIZE, PAGESIZE);
@@ -255,6 +271,7 @@ void exception(regstate* regs) {
     // Copy the saved registers into the `current` process descriptor.
     current->regs = *regs;
     regs = &current->regs;
+    
 
     // It can be useful to log events using `log_printf`.
     // Events logged this way are stored in the host's `log.txt` file.
@@ -320,6 +337,10 @@ void exception(regstate* regs) {
 int syscall_page_alloc(uintptr_t addr);
 pid_t syscall_fork();
 void syscall_exit();
+int syscall_page_free(uintptr_t addr, size_t len);
+int syscall_kill(pid_t pid);
+int syscall_sleep(unsigned long ticks_to_sleep);
+
 
 // syscall(regs)
 //    Handle a system call initiated by a `syscall` instruction.
@@ -378,6 +399,17 @@ uintptr_t syscall(regstate* regs) {
     case SYSCALL_EXIT:
         syscall_exit();
         schedule(); // does not return
+    
+    // EC
+    case SYSCALL_KILL:
+        return syscall_kill(current->regs.reg_rdi);
+
+    case SYSCALL_SLEEP:
+        syscall_sleep(current->regs.reg_rdi);
+        break;
+
+    case SYSCALL_PAGE_FREE:
+        return syscall_page_free(current->regs.reg_rdi, current->regs.reg_rsi);
 
     default:
         proc_panic(current, "Unhandled system call %ld (pid=%d, rip=%p)!\n",
@@ -405,8 +437,11 @@ int syscall_page_alloc(uintptr_t addr) {
     physpages[addr / PAGESIZE].refcount++;
 
     memset((void*) addr, 0, PAGESIZE);*/
+    if (addr < PROC_START_ADDR || addr >= MEMSIZE_VIRTUAL) return -1;
     void* pa = kalloc(PAGESIZE);
     if (!pa) return -1;
+
+    
 
     memset(pa, 0, PAGESIZE);
 
@@ -434,6 +469,7 @@ pid_t syscall_fork() {
     }
 
     init_process(&ptable[pid], 0);
+    ptable[pid].wakeuptick = 0;
 
     
 
@@ -532,6 +568,14 @@ void schedule() {
     pid_t pid = current->pid;
     for (unsigned spins = 1; true; spins++) {
         pid = (pid + 1) % PID_MAX;
+        init_timer(100);
+        for (int i = 0; i < PID_MAX; i++) {
+            if (ptable[i].state == P_BLOCKED &&
+                ticks.load() >= ptable[i].wakeuptick) {
+                log_printf("make runable tick:%lu\n", ticks.load());
+                ptable[i].state = P_RUNNABLE;
+            }
+        }
         if (ptable[pid].state == P_RUNNABLE) {
             run(&ptable[pid]);
         }
@@ -543,6 +587,8 @@ void schedule() {
         if (spins % (1 << 12) == 0) {
             memshow();
         }
+        if(spins % 1000 == 0 && enable_tick)
+            ticks++;
     }
 }
 
@@ -602,4 +648,70 @@ void memshow() {
             "                          [All processes have exited]\n"
             "\n\n\n\n\n\n\n\n\n\n\n");
     }
+}
+
+// EXTRA CREDIT
+
+// syscall_kill()
+// a system call that lets one process kill another process
+int syscall_kill(pid_t pid) {
+    
+    if (pid <= 0 || pid >= PID_MAX) {
+        return -1;
+    }
+
+    if (ptable[pid].state == P_FREE) {
+        return -1;
+    }
+
+    free_pagetable(ptable[pid].pagetable);
+    ptable[pid].state = P_FREE;
+
+    if (pid == current->pid) {
+        schedule();  
+    }
+    
+    return 0;
+}
+
+// syscall_sleep()
+// a system call that puts the calling process to 
+//sleep until a given amount of time (measured in ticks) elapses.
+int syscall_sleep(unsigned long ticks_to_sleep) {
+    current->wakeuptick = ticks.load() + ticks_to_sleep;
+    log_printf("tick:%lu\n", ticks.load());
+    log_printf("tick+s:%lu\n", ticks.load()+ ticks_to_sleep);
+    current->state = P_BLOCKED;
+    current->regs.reg_rax = 0;
+    schedule();
+    return 0;
+}
+
+// syscall_page_free(addr, len)
+//    Unmaps all pages in [addr, addr+len):
+//    - addr must be page-aligned and len must be > 0
+//    - only unmaps pages that are present and user-accessible
+//    - decrements refcount; frees physical page when refcount hits 0
+int syscall_page_free(uintptr_t addr, size_t len) {
+    if (len == 0) 
+        return -1;
+
+    if (addr % PAGESIZE != 0) 
+        return -1;
+
+    if (addr < PROC_START_ADDR || addr + len > MEMSIZE_VIRTUAL) return -1;
+
+    uintptr_t end = round_up(addr + len, PAGESIZE);
+    for (uintptr_t a = addr; a < end; a += PAGESIZE) {
+        vmiter it(current->pagetable, a);
+
+        if (!it.present() || !it.user()) continue;
+
+        uintptr_t pa = it.pa();
+
+        it.try_map((uintptr_t)0, 0);
+        kfree((void*) pa);   
+    }
+
+    return 0;
 }
