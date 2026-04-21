@@ -48,6 +48,10 @@ class DbMap {
   // TODO (Part A, Step 4): You will need to add fields to synchronize access to
   // the hashmap buckets!
 
+  mutable std::array<std::shared_mutex, BUCKET_COUNT> locks;
+
+
+
   // Return the index of the bucket to search for `key`.
   size_t bucket(std::string key) const {
     return hasher(key) % BUCKET_COUNT;

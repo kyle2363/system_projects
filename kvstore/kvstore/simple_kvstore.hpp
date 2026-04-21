@@ -2,6 +2,7 @@
 #define SIMPLE_KVSTORE_HPP
 
 #include <map>
+#include <unordered_map>
 #include <mutex>
 #include <string>
 
@@ -25,6 +26,9 @@ class SimpleKvStore : public KvStore {
  private:
   // TODO (Part A, Step 1 and Step 2): Implement your internal key-value store
   // here! You might need to add fields to synchronize access.
+  std::unordered_map<std::string, std::string> data;
+  std::mutex mtx;
+
 };
 
 #endif /* end of include guard */
