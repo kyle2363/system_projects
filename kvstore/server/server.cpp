@@ -6,7 +6,7 @@ int KvServer::start() {
   // Initialize KvStore
   // TODO (Part B, Step 2): Change your underlying KvStore to the
   // ConcurrentKvStore!
-  this->store = std::make_unique<SimpleKvStore>();
+  this->store = std::make_unique<ConcurrentKvStore>();
 
   // Create listener socket, and start client listener
   this->listener_fd = open_listener_socket(address);
@@ -48,6 +48,8 @@ int KvServer::start() {
     // Take a look at the functions provided in this file to see if any of
     // them will help you!
 
+    Join();
+
     this->shardcontroller_querier =
         std::thread(&KvServer::process_config_loop, this);
     cout_color(BLUE, "Shardcontroller on: ", this->shardcontroller_address);
@@ -82,6 +84,8 @@ void KvServer::stop() {
     // TODO (Part B, Step 2): Send a leave request to the shardcontroller
     // Take a look at the functions provided in this file to see if any of
     // them will help you!
+
+    Leave();
 
     cout_color(BLUE, "Joining query shardcontroller thread...");
     this->shardcontroller_querier.join();
@@ -148,6 +152,8 @@ bool KvServer::process_config() {
   // TODO: Update this->config to reflect the result from querying the
   // shardcontroller
 
+  this->config = res->config;
+
   // to_transfer maps server --> [<vector of keys to transfer to server>,
   // <vector of values to transfer to server>]
   // You're free to use a different data structure if you'd
@@ -162,27 +168,48 @@ bool KvServer::process_config() {
   //  add the pair to_transfer under the key of the newly-responsible (i.e.,
   //  destination) server and delete the pair from this server's store.
 
+  std::vector<std::string> all_keys = this->store->AllKeys();
+
+  MultiGetRequest all_key_req = MultiGetRequest{all_keys};
+  MultiGetResponse all_key_res = {};
+
+  this->store->MultiGet(&all_key_req, &all_key_res);
+
+  std::vector<std::string> all_values = all_key_res.values;
+  for (int i=0;i< (int)all_keys.size();i++){
+    std::optional<std::string> current = config.get_server(all_keys[i]);
+    if(current.has_value() && current != address){
+      to_transfer[current.value()][0].push_back(all_keys[i]);
+      to_transfer[current.value()][1].push_back(all_values[i]);
+      DeleteRequest req_key_delete = DeleteRequest{all_keys[i]};
+      DeleteResponse res_key_delete = {};
+      (*this->store).Delete(&req_key_delete, &res_key_delete);
+    }
+  }
+
+
+
   // NOTE: Comment this in to transfer the keys!
   // // for each server responsible for moved keys:
-  // for (auto&& [s, responsible_pairs] : to_transfer) {
-  //     while (true) {
-  //         // connect to server
-  //         std::shared_ptr<ServerConn> conn = connect_to_server(s);
-  //         if (!conn) {
-  //             cerr_color(RED, "Failed to connect to server ", s);
-  //             continue;
-  //         }
-  //         // make MultiPut request
-  //         MultiPutRequest req{responsible_pairs[0], responsible_pairs[1]};
-  //         if (!conn->send_request(req)) continue;
+  for (auto&& [s, responsible_pairs] : to_transfer) {
+      while (true) {
+          // connect to server
+          std::shared_ptr<ServerConn> conn = connect_to_server(s);
+          if (!conn) {
+              cerr_color(RED, "Failed to connect to server ", s);
+              continue;
+          }
+          // make MultiPut request
+          MultiPutRequest req{responsible_pairs[0], responsible_pairs[1]};
+          if (!conn->send_request(req)) continue;
 
-  //         // receive response, and check for success
-  //         std::optional<Response> res = conn->recv_response();
-  //         if (!res) continue;
-  //         if (std::get_if<ErrorResponse>(&*res)) continue;
-  //         break;
-  //     }
-  // }
+          // receive response, and check for success
+          std::optional<Response> res = conn->recv_response();
+          if (!res) continue;
+          if (std::get_if<ErrorResponse>(&*res)) continue;
+          break;
+      }
+  }
 
   return true;
 }

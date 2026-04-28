@@ -32,6 +32,9 @@ int main() {
 
   std::optional<std::string> server;
   server = sm_config.get_server("0123");
+  for (const auto& word : server_addresses) {
+    std::cout << word << " ";
+  }
   ASSERT(server);
   ASSERT_EQ(*server, server_addresses[0]);
 

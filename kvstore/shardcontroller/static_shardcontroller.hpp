@@ -34,7 +34,7 @@ class StaticShardController : public Shardcontroller {
 
  private:
   // Note: You'll need these fields in your Shardcontroller implementation!
-  ShardControllerConfig config;
+  ShardControllerConfig config; 
   std::shared_mutex config_mtx;
 
   /* ==================================================*/

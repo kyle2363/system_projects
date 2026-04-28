@@ -2,12 +2,20 @@
 
 bool StaticShardController::Query(const QueryRequest*, QueryResponse* res) {
   // TODO (Part B, Step 1): Implement!
+  std::shared_lock<std::shared_mutex> lock(config_mtx);
+  res->config = this->config;
 
   return true;
 }
 
 bool StaticShardController::Join(const JoinRequest* req, JoinResponse*) {
   // TODO (Part B, Step 1): Implement!
+  std::unique_lock<std::shared_mutex> lock(config_mtx);
+  if(this->config.server_to_shards.contains(req->server)){
+    return false;
+  }
+
+  this->config.server_to_shards[req->server] = {};
 
   cout_color(BLUE, "Added server ", req->server,
              " to shardcontroller configuration.");
@@ -16,7 +24,18 @@ bool StaticShardController::Join(const JoinRequest* req, JoinResponse*) {
 
 bool StaticShardController::Leave(const LeaveRequest* req, LeaveResponse*) {
   // TODO (Part B, Step 1): Implement!
+  std::unique_lock<std::shared_mutex> lock(config_mtx);
+  if (!this->config.server_to_shards.contains(req->server)) {
+    return false;
+  }
 
+  std::vector<Shard> shards = this->config.server_to_shards[req->server];
+  this->config.server_to_shards.erase(req->server);
+
+  if (!this->config.server_to_shards.empty()) {
+    auto& target_shards = this->config.server_to_shards.begin()->second;
+    target_shards.insert(target_shards.end(), shards.begin(), shards.end());
+  }
   cout_color(BLUE, "Deleted server ", req->server,
              " on shardcontroller configuration.");
   return true;
@@ -24,6 +43,9 @@ bool StaticShardController::Leave(const LeaveRequest* req, LeaveResponse*) {
 
 bool StaticShardController::Move(const MoveRequest* req, MoveResponse*) {
   // TODO (Part B, Step 1): Implement!
+  if (!this->config.server_to_shards.contains(req->server)) {
+    return false;
+  }
 
   // TODO: For each shard to be moved, iterate over each server's current
   // shards. For each of the server's shards, if 'moved_shards' overlaps with
@@ -31,6 +53,7 @@ bool StaticShardController::Move(const MoveRequest* req, MoveResponse*) {
   // 'new_shards.' Once the loop ends, we replace the server's shards with
   // 'new_shards.' You'll find the 'split_shard' function helpful (c.f.
   // shard.hpp).
+  std::unique_lock<std::shared_mutex> lock(config_mtx);
   for (Shard moved_shards : req->shards) {
     for (auto&& [server, current_shards] : this->config.server_to_shards) {
       std::vector<Shard> new_shards;
@@ -49,30 +72,48 @@ bool StaticShardController::Move(const MoveRequest* req, MoveResponse*) {
         switch (os) {
           case OverlapStatus::NO_OVERLAP: {
             // TODO
+            new_shards.push_back(current_shard);
             continue;
           }
           case OverlapStatus::OVERLAP_START: {
             // TODO
+            std::pair<Shard, Shard> split = split_shard(current_shard, moved_shards.upper, true);
+            new_shards.push_back(split.second);
             continue;
           }
           case OverlapStatus::OVERLAP_END: {
             // TODO
+            std::pair<Shard, Shard> split = split_shard(current_shard, moved_shards.lower, false);
+            new_shards.push_back(split.first);
             continue;
           }
           case OverlapStatus::COMPLETELY_CONTAINS: {
             // TODO
+            std::pair<Shard, Shard> split_start = split_shard(current_shard, moved_shards.lower, false);
+            std::pair<Shard, Shard> split_end = split_shard(split_start.second, moved_shards.upper, true);
+            new_shards.push_back(split_start.first);
+            new_shards.push_back(split_end.second);
             continue;
           }
           case OverlapStatus::COMPLETELY_CONTAINED:
             // TODO
+            //do nothing
             continue;
         }
       }
       current_shards = std::move(new_shards);
+      sort_shards(current_shards);
     }
   }
 
   // TODO: Now, actually move the shard onto the target server!
+  auto& server_shards = this->config.server_to_shards[req->server];
+  for (const Shard& s : req->shards) {
+    if (std::find(server_shards.begin(), server_shards.end(), s) == server_shards.end()) {
+      server_shards.push_back(s);
+      sort_shards(server_shards);
+    }
+  }
 
   cout_color(DIM, "Moved the following shards to server ", req->server, ":");
   for (auto&& s : req->shards) print_color(std::cout, DIM, s, " ");
