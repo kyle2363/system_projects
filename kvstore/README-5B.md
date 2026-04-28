@@ -5,7 +5,11 @@ Project 5B - Distributed Store
 
 ## Design Overview
 
+none
+
 ## Collaborators
+
+none
 
 ## Extra Credit Attempted
 
