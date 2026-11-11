@@ -11,3 +11,11 @@ __pycache__/
 
 *.d
 .deps/
+
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+Thumbs.db

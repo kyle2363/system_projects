@@ -1,28 +1,21 @@
-Project 2: DMalloc
-===================
+# Debugging Allocator
 
-<!-- TODO: Fill this out. -->
+A C++ allocation wrapper that tracks allocation statistics and reports common memory errors. Built on the course's base allocator and diagnostic test suite.
 
-## Design Overview:
+## Implementation
 
-Rather then a metadata stored prior to the address of a allocated part of memory, the data is stored in a unordered map as a address -> strut of the data
+The [allocator](dmalloc.cc) stores pointer-to-allocation metadata in an `unordered_map`, including allocation size and source location. Keeping metadata outside user allocations separates bookkeeping from the user-writable region. A set tracks freed pointers, and an eight-byte trailing sentinel helps detect writes past allocation boundaries.
 
-## Collaborators: 
-none
+The implementation includes invalid-free and double-free diagnostics, allocation statistics, leak reporting, and reallocation support. These are debugging mechanisms rather than comprehensive memory safety guarantees; a trailing sentinel does not detect every out-of-bounds access.
 
-## Extra Credit attempted:
+## Build and test
 
-Reallocation EC
+Inside the Linux course container, from this directory:
 
-## Approximately how long did it take for you to complete DMalloc?
+```bash
+make
+make check
+make check-1
+```
 
-15 hours
-
-## How do you rank the difficulty of DMalloc, compared to Snake?
-
----Most difficult---  
-
-1. Snake
-2. DMalloc
-
----Least difficult---
+The existing suite contains 40 test sources. `make SAN=1` enables the sanitizer configuration supplied by the project; individual test rules deliberately exclude some sanitizers. Actual verification results are in [../VALIDATION.md](../VALIDATION.md).

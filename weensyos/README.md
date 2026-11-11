@@ -1,34 +1,20 @@
-Project 4 - WeensyOS
-====================
+# WeensyOS: Virtual Memory and Processes
 
-<!-- TODO: Fill this out. -->
+An educational x86-64 kernel project built on WeensyOS. The implementation work is centered in [kernel.cc](kernel.cc), including page-table handling, process memory, fork, and exit.
 
-## Design Overview
+The supplied emulator, boot code, hardware support, and libraries are part of the teaching framework. Preserve [COPYRIGHT](COPYRIGHT) and [AUTHORS.md](AUTHORS.md); see [ABOUT.md](ABOUT.md) for upstream background and debugging instructions.
 
-No notable design choices
+## Build and run
 
-## Collaborators
+In the Linux course environment, from this directory:
 
-None
+```bash
+make
+make run-console
+```
 
-## Extra Credit Attempted
+QEMU is needed to run the kernel. Building an image alone does not verify virtual-memory isolation or runtime behavior. See [../VALIDATION.md](../VALIDATION.md) for the scope of verification.
 
-mostly works:
-Sleep System Call
-Easy. Create a system call that puts the calling process to sleep until a given amount of time (measured in ticks) elapses. Note that ticks will count timer interrupts!
+## Known limitations
 
-Note, requires manually incrementing tick as when key is pressed tick no longer increments (set on line 46 kernel.cc to 1)
-
-
-Attempted after lots of debugging:
-
-Kill System Call
-Easy. Create a system call that lets one process kill another process (or itself)!
-
-Program will refer to a page at the memory limit? should work if not for that
-
-Free System Call
-Moderately difficult. Create sys_page_free, a system call that unallocates pages. It should behave like munmap.
-
-opposite issue of above, refers to address 0 when it should not be able to due to no permissions
-
+The additional sleep, kill, and page-free system calls are experimental. The original implementation notes report timer progress problems during keyboard input and address/permission faults in kill and page-free scenarios. These extensions are retained for study and are not presented as finished features.
